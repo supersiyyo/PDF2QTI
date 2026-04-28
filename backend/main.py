@@ -176,15 +176,23 @@ class ExtractQTIRequest(BaseModel):
 async def export_qti(data: ExtractQTIRequest):
     try:
         # Construct markdown string for text2qti
-        markdown_content = f"Quiz title: {data.quiz_title}\n\n"
+        # Sanitize quiz title to remove newlines
+        safe_quiz_title = data.quiz_title.replace('\n', ' ').replace('\r', ' ').strip()
+        markdown_content = f"Quiz title: {safe_quiz_title}\n\n"
+        
         for i, q in enumerate(data.questions, 1):
-            markdown_content += f"{i}. {q.question_text}\n"
+            # Sanitize question text
+            safe_question = q.question_text.replace('\n', ' ').replace('\r', ' ').strip()
+            markdown_content += f"{i}. {safe_question}\n"
+            
             for j, choice in enumerate(q.choices):
+                # Sanitize choices
+                safe_choice = choice.replace('\n', ' ').replace('\r', ' ').strip()
                 choice_letter = chr(97 + j) # a, b, c, d
                 if j == q.correct_answer_index:
-                    markdown_content += f"*{choice_letter}) {choice}\n"
+                    markdown_content += f"*{choice_letter}) {safe_choice}\n"
                 else:
-                    markdown_content += f"{choice_letter}) {choice}\n"
+                    markdown_content += f"{choice_letter}) {safe_choice}\n"
             markdown_content += "\n"
 
         # Temporary files for text2qti

@@ -20,7 +20,7 @@ Located in the `/backend` directory, the backend serves as the core processing e
 **Key Workflows:**
 
 - **File Upload (`/api/process-pdf`)**: Receives a PDF file via a multipart form request. It writes the file to a temporary location, extracts the text using `pdfplumber`, and constructs a strict prompt. The prompt is passed to the `call_gemini_with_retry()` helper, which attempts the primary model (`gemini-2.5-flash`) up to 3 times with exponential backoff (2s, 4s, 8s). If all retries are exhausted, it cascades to the fallback model (`gemini-1.5-flash`). If all models fail, a structured `503` response is returned. When a fallback model is used, a `_warning` field is included in the response to notify the user.
-- **QTI Generation (`/api/export-qti`)**: Receives validated JSON containing the quiz questions. It dynamically builds a markdown string structured specifically for `text2qti`. It then spawns a subprocess to execute `text2qti` and streams the resulting `.zip` file back to the client.
+- **QTI Generation (`/api/export-qti`)**: Receives validated JSON containing the quiz questions. It sanitizes the AI-generated questions and choices (stripping newlines) to prevent parser failures. It then dynamically builds a markdown string structured specifically for `text2qti`, spawns a subprocess to execute `text2qti`, and streams the resulting `.zip` file back to the client.
 
 **Error Handling Strategy:**
 
