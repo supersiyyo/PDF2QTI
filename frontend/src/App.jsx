@@ -36,10 +36,14 @@ function App() {
       });
       
       // Trigger download
+      const safe_filename = finalData.quiz_title
+        ? finalData.quiz_title.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '')
+        : 'quiz';
+      
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'quiz.zip');
+      link.setAttribute('download', `${safe_filename}.zip`);
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
