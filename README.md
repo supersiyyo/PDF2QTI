@@ -5,7 +5,8 @@ Doc-to-Quiz is a full-stack application designed to automatically convert PDF do
 ## Features
 
 - **Document Processing**: Robust PDF text extraction utilizing `pdfplumber`.
-- **AI-Powered Digitization & Generation**: Integrates with Google's Gemini 2.5 Flash API to parse and format questions accurately.
+- **AI-Powered Digitization & Generation**: Integrates with Google's Gemini API to parse and format questions accurately.
+  - **Resilient AI Calls**: Automatic exponential backoff retries (up to 3 attempts) and a `gemini-1.5-flash` fallback model ensure the service handles Gemini API overload (`503`) gracefully. Users are notified if a backup model was used.
   - **Digitize Mode**: Extracts existing multiple-choice questions and identifies the correct answers.
   - **Generate Mode**: Synthesizes study materials and generates new, relevant multiple-choice questions.
 - **QTI Export Engine**: Converts extracted questions into a downloadable `.zip` package formatted as a QTI quiz, fully compatible with learning management systems like Canvas.

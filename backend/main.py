@@ -1,7 +1,8 @@
 import os
+import time
 import tempfile
 import uuid
-from typing import List
+from typing import List, Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -9,6 +10,7 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import pdfplumber
 from google import genai
+from google.genai import errors as genai_errors
 import text2qti
 from text2qti.qti import QTI
 
@@ -43,6 +45,71 @@ def extract_text_from_pdf(pdf_path: str) -> str:
             if page_text:
                 text += page_text + "\n"
     return text
+
+# --- Gemini Resilience Helpers ---
+
+GEMINI_MODEL_CASCADE = ["gemini-2.5-flash", "gemini-1.5-flash"]
+MAX_RETRIES = 3
+RETRY_BASE_DELAY = 2  # seconds
+
+def _is_overload_error(exc: Exception) -> bool:
+    """Return True if the exception is a Gemini 503 / UNAVAILABLE error."""
+    msg = str(exc).lower()
+    return "503" in msg or "unavailable" in msg or "high demand" in msg
+
+def call_gemini_with_retry(prompt: str, mode: str) -> dict:
+    """
+    Attempt to call the Gemini API with exponential backoff retries.
+    Cascades through GEMINI_MODEL_CASCADE if all retries on a model fail.
+    Returns a dict with keys: 'data' (parsed JSON) and optionally 'warning' (str).
+    """
+    import json
+    client = genai.Client()
+    config = {
+        "response_mime_type": "application/json",
+        "response_schema": QuizExtraction,
+        "temperature": 0.2 if mode == "digitize" else 0.7,
+    }
+
+    last_exc = None
+    for model_idx, model_name in enumerate(GEMINI_MODEL_CASCADE):
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                print(f"[Gemini] Trying model={model_name}, attempt={attempt}")
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=config,
+                )
+                data = json.loads(response.text)
+                result = {"data": data}
+                # Notify user if we fell back to a secondary model
+                if model_idx > 0:
+                    result["warning"] = (
+                        f"The primary AI model was unavailable. "
+                        f"Your quiz was generated using a backup model ({model_name}). "
+                        f"Results may vary slightly."
+                    )
+                return result
+            except Exception as exc:
+                last_exc = exc
+                if _is_overload_error(exc):
+                    if attempt < MAX_RETRIES:
+                        delay = RETRY_BASE_DELAY * (2 ** (attempt - 1))
+                        print(f"[Gemini] 503 on {model_name} attempt {attempt}. Retrying in {delay}s...")
+                        time.sleep(delay)
+                    else:
+                        print(f"[Gemini] All {MAX_RETRIES} retries exhausted for {model_name}. Cascading...")
+                        break  # try next model
+                else:
+                    # Non-retriable error — re-raise immediately
+                    raise
+
+    # All models exhausted
+    raise HTTPException(
+        status_code=503,
+        detail="The AI model is currently overloaded. Please try again in a moment.",
+    )
 
 @app.get("/")
 def read_root():
@@ -79,35 +146,27 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
 
         full_prompt = f"{prompt_instruction}\n\nDocument Text:\n{extracted_text}"
 
-        client = genai.Client() # Uses GEMINI_API_KEY from env
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=full_prompt,
-            config={
-                'response_mime_type': 'application/json',
-                'response_schema': QuizExtraction,
-                'temperature': 0.2 if mode == "digitize" else 0.7
-            },
-        )
-        
-        # Depending on the return format, it should be a parsed JSON matching QuizExtraction
-        # google-genai returns BaseModel populated objects natively or we deserialize json
-        # Usually client.models.generate_content with response_schema returns dict/BaseModel directly or raw text.
-        # Let's read the text and parse it with Pydantic if it's returning text JSON.
-        result_json = response.text
-        # Let frontend handle parsing or we parse it and return dict
-        import json
-        data = json.loads(result_json)
-        
+        # Call Gemini with retry + model fallback
+        result = call_gemini_with_retry(full_prompt, mode)
+        data = result["data"]
+
         original_name = file.filename
         if original_name.lower().endswith(".pdf"):
             original_name = original_name[:-4]
         data["quiz_title"] = f"P2Q_{original_name}"
-        
+
+        # Pass through any warning for the frontend to display
+        if "warning" in result:
+            data["_warning"] = result["warning"]
+
         return data
 
+    except HTTPException:
+        raise  # Re-raise structured HTTP exceptions as-is
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Error] Unexpected: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred. Please try again.")
+
 
 class ExtractQTIRequest(BaseModel):
     quiz_title: str

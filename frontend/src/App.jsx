@@ -7,10 +7,16 @@ function App() {
   const [quizData, setQuizData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isRetryable, setIsRetryable] = useState(false);
+  const [lastCall, setLastCall] = useState(null); // { file, mode }
+  const [warning, setWarning] = useState(null);
 
   const handleProcessPdf = async (file, mode) => {
     setLoading(true);
     setError(null);
+    setIsRetryable(false);
+    setWarning(null);
+    setLastCall({ file, mode });
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -20,13 +26,36 @@ function App() {
       const response = await axios.post(`${baseURL}/api/process-pdf`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
-      setQuizData(response.data);
+
+      const data = response.data;
+
+      // Surface fallback model warning if present
+      if (data._warning) {
+        setWarning(data._warning);
+        delete data._warning;
+      }
+
+      setQuizData(data);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.detail || "An error occurred during processing.");
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail;
+
+      if (status === 503) {
+        setIsRetryable(true);
+        setError(detail || 'The AI model is currently overloaded. Please try again in a moment.');
+      } else {
+        setIsRetryable(false);
+        setError(detail || 'An error occurred during processing.');
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRetry = () => {
+    if (lastCall) {
+      handleProcessPdf(lastCall.file, lastCall.mode);
     }
   };
 
@@ -62,9 +91,42 @@ function App() {
         <p>Transform documents and static quizzes into Canvas-ready assessments.</p>
       </header>
 
+      {warning && (
+        <div className="surface-card" style={{ borderColor: '#d97706', backgroundColor: '#fffbeb' }}>
+          <p style={{ color: '#92400e', fontWeight: 500, margin: 0 }}>
+            ⚠️ {warning}
+          </p>
+          <button
+            onClick={() => setWarning(null)}
+            style={{ marginTop: '6px', fontSize: '0.75rem', background: 'none', border: 'none', color: '#92400e', cursor: 'pointer', padding: 0 }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {error && (
-        <div className="surface-card" style={{borderColor: 'var(--error)'}}>
-          <p style={{color: 'var(--error)', fontWeight: 500}}>{error}</p>
+        <div className="surface-card" style={{ borderColor: 'var(--error)' }}>
+          <p style={{ color: 'var(--error)', fontWeight: 500, margin: 0 }}>{error}</p>
+          {isRetryable && (
+            <button
+              id="retry-btn"
+              onClick={handleRetry}
+              style={{
+                marginTop: '10px',
+                padding: '6px 16px',
+                backgroundColor: 'var(--primary)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+              }}
+            >
+              🔄 Retry
+            </button>
+          )}
         </div>
       )}
 
@@ -79,7 +141,7 @@ function App() {
         <PreviewEditor 
           initialData={quizData} 
           onExport={handleExportQti}
-          onReset={() => setQuizData(null)}
+          onReset={() => { setQuizData(null); setWarning(null); }}
         />
       )}
     </div>
