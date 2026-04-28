@@ -48,8 +48,11 @@ const PreviewEditor = ({ initialData, onExport, onReset }) => {
       </div>
 
       <div className="surface-card">
-        <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', color: 'var(--text-secondary)' }}>
+        <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
           Preview & Edit Quiz
+          <span style={{ fontSize: '0.75rem', backgroundColor: '#eff6ff', color: '#1d4ed8', padding: '4px 10px', borderRadius: '12px', fontWeight: 600, border: '1px solid #dbeafe' }}>
+            {data?.questions?.length || 0} Questions
+          </span>
         </h2>
 
         <div style={{ marginBottom: '3rem' }}>
@@ -65,12 +68,25 @@ const PreviewEditor = ({ initialData, onExport, onReset }) => {
         
         {data?.questions?.map((q, qIndex) => (
           <div key={qIndex} className="question-block">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <span style={{ 
+                backgroundColor: 'var(--primary)', 
+                color: '#fff', 
+                fontSize: '0.65rem', 
+                fontWeight: 700, 
+                padding: '2px 8px', 
+                borderRadius: '4px',
+                textTransform: 'uppercase'
+              }}>
+                Question {qIndex + 1}
+              </span>
+            </div>
             <input 
               type="text"
               className="question-input"
               value={q.question_text}
               onChange={(e) => handleQuestionTextChange(qIndex, e.target.value)}
-              placeholder={`Question ${qIndex + 1}`}
+              placeholder={`Enter question text`}
             />
             
             <div className="choices-list">

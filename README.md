@@ -6,9 +6,11 @@ Doc-to-Quiz is a full-stack application designed to automatically convert PDF do
 
 - **Document Processing**: Robust PDF text extraction utilizing `pdfplumber`.
 - **AI-Powered Digitization & Generation**: Integrates with Google's Gemini API to parse and format questions accurately.
-  - **Resilient AI Calls**: Automatic exponential backoff retries (up to 3 attempts) and a `gemini-1.5-flash` fallback model ensure the service handles Gemini API overload (`503`) gracefully. Users are notified if a backup model was used.
+  - **Resilient AI Calls**: Automatic exponential-backoff retries and a **Gemini 2.5 Flash → Flash-Lite** model cascade ensure the service handles both `503` (overload) and `429` (quota) errors gracefully. If a backup model is used, the user is notified with a friendly green notice.
+  - **Non-blocking Execution**: AI API calls run via `asyncio.to_thread` so the SSE stream stays alive during long model calls.
   - **Digitize Mode**: Extracts existing multiple-choice questions and identifies the correct answers.
   - **Generate Mode**: Synthesizes study materials and generates new, relevant multiple-choice questions.
+- **Premium Processing UI**: A high-fidelity shimmer skeleton mirrors the exact layout of the final result during processing, complete with a live elapsed timer, model badge, and rotating educational facts. Results fade in smoothly on completion.
 - **QTI Export Engine**: Converts extracted questions into a downloadable `.zip` package formatted as a QTI quiz, fully compatible with learning management systems like Canvas.
 - **Decoupled Architecture**: Features a fast, asynchronous Python/FastAPI backend and a responsive React/Vite frontend.
 - **CI/CD Automation**: Fully automated deployment pipeline using GitHub Actions to deploy the backend to Railway and the frontend to SiteGround via secure FTP.
@@ -53,10 +55,17 @@ Doc-to-Quiz is a full-stack application designed to automatically convert PDF do
 
 ### Running the Application
 
-You can use the provided startup script (Linux/GNOME) from the project root:
+You can use the provided startup scripts from the project root:
 
+**Linux (GNOME/xterm):**
 ```bash
 ./start_app.sh
+```
+
+**Windows:**
+Double-click `start_app.bat` or run it from CMD:
+```cmd
+start_app.bat
 ```
 
 Or run the services manually:

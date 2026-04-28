@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import UploadComponent from './components/UploadComponent';
 import PreviewEditor from './components/PreviewEditor';
+import ProcessingState from './components/ProcessingState';
 
 function App() {
   const [quizData, setQuizData] = useState(null);
@@ -10,32 +11,75 @@ function App() {
   const [isRetryable, setIsRetryable] = useState(false);
   const [lastCall, setLastCall] = useState(null); // { file, mode }
   const [warning, setWarning] = useState(null);
+  const [currentStatus, setCurrentStatus] = useState('');
+  const [currentModel, setCurrentModel] = useState('');
 
   const handleProcessPdf = async (file, mode) => {
     setLoading(true);
     setError(null);
     setIsRetryable(false);
     setWarning(null);
+    setCurrentStatus('');
+    setCurrentModel('');
     setLastCall({ file, mode });
+
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('mode', mode);
 
       const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
-      const response = await axios.post(`${baseURL}/api/process-pdf`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      
+      const response = await fetch(`${baseURL}/api/process-pdf`, {
+        method: 'POST',
+        body: formData,
       });
 
-      const data = response.data;
-
-      // Surface fallback model warning if present
-      if (data._warning) {
-        setWarning(data._warning);
-        delete data._warning;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw { response: { status: response.status, data: errorData } };
       }
 
-      setQuizData(data);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      let streamActive = true;
+      while (streamActive) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop(); // Keep partial line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const payload = JSON.parse(line.replace('data: ', ''));
+              
+              if (payload.status === 'success') {
+                setQuizData(payload.data);
+                if (payload.data._warning) {
+                  setWarning(payload.data._warning);
+                }
+                streamActive = false; // Break the outer loop
+                break; // Break the lines loop
+              } else if (payload.status === 'error') {
+                setError(payload.message);
+                streamActive = false;
+                break;
+              } else {
+                const msg = typeof payload.message === 'object' ? payload.message.message : payload.message;
+                setCurrentStatus(msg || '');
+                if (payload.model) setCurrentModel(payload.model);
+              }
+            } catch (e) {
+              console.error("Error parsing SSE chunk", e);
+            }
+          }
+        }
+      }
     } catch (err) {
       console.error(err);
       const status = err.response?.status;
@@ -92,15 +136,15 @@ function App() {
       </header>
 
       {warning && (
-        <div className="surface-card" style={{ borderColor: '#d97706', backgroundColor: '#fffbeb' }}>
-          <p style={{ color: '#92400e', fontWeight: 500, margin: 0 }}>
-            ⚠️ {warning}
+        <div className="surface-card" style={{ borderColor: '#10b981', backgroundColor: '#f0fdf4', marginBottom: '1rem' }}>
+          <p style={{ color: '#064e3b', fontWeight: 500, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '1.2rem' }}>✨</span> {warning}
           </p>
           <button
             onClick={() => setWarning(null)}
-            style={{ marginTop: '6px', fontSize: '0.75rem', background: 'none', border: 'none', color: '#92400e', cursor: 'pointer', padding: 0 }}
+            style={{ marginTop: '6px', fontSize: '0.75rem', background: 'none', border: 'none', color: '#065f46', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
           >
-            Dismiss
+            Dismiss Notice
           </button>
         </div>
       )}
@@ -131,18 +175,17 @@ function App() {
       )}
 
       {loading ? (
-        <div className="surface-card loading-overlay">
-          <div className="spinner" style={{ border: '4px solid #f3f3f3', borderTop: '4px solid var(--primary)', borderRadius: '50%', width: '30px', height: '30px' }}></div>
-          <span>Processing document... This may take a minute.</span>
-        </div>
+        <ProcessingState status={currentStatus} model={currentModel} />
       ) : !quizData ? (
         <UploadComponent onProcess={handleProcessPdf} />
       ) : (
-        <PreviewEditor 
-          initialData={quizData} 
-          onExport={handleExportQti}
-          onReset={() => { setQuizData(null); setWarning(null); }}
-        />
+        <div style={{ animation: 'fadeInResult 0.45s ease' }}>
+          <PreviewEditor 
+            initialData={quizData} 
+            onExport={handleExportQti}
+            onReset={() => { setQuizData(null); setWarning(null); }}
+          />
+        </div>
       )}
     </div>
   );
