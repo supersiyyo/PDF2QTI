@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import UploadComponent from './components/UploadComponent';
 import PreviewEditor from './components/PreviewEditor';
+import ProgressConsole from './components/ProgressConsole';
 
 function App() {
   const [quizData, setQuizData] = useState(null);
@@ -10,32 +11,66 @@ function App() {
   const [isRetryable, setIsRetryable] = useState(false);
   const [lastCall, setLastCall] = useState(null); // { file, mode }
   const [warning, setWarning] = useState(null);
+  const [logs, setLogs] = useState([]);
 
   const handleProcessPdf = async (file, mode) => {
     setLoading(true);
     setError(null);
     setIsRetryable(false);
     setWarning(null);
+    setLogs([]);
     setLastCall({ file, mode });
+
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('mode', mode);
 
       const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
-      const response = await axios.post(`${baseURL}/api/process-pdf`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      
+      const response = await fetch(`${baseURL}/api/process-pdf`, {
+        method: 'POST',
+        body: formData,
       });
 
-      const data = response.data;
-
-      // Surface fallback model warning if present
-      if (data._warning) {
-        setWarning(data._warning);
-        delete data._warning;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw { response: { status: response.status, data: errorData } };
       }
 
-      setQuizData(data);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop(); // Keep partial line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const payload = JSON.parse(line.replace('data: ', ''));
+              
+              if (payload.status === 'success') {
+                setQuizData(payload.data);
+                if (payload.data._warning) {
+                  setWarning(payload.data._warning);
+                }
+              } else if (payload.status === 'error') {
+                setError(payload.message);
+              } else {
+                setLogs(prev => [...prev, payload]);
+              }
+            } catch (e) {
+              console.error("Error parsing SSE chunk", e);
+            }
+          }
+        }
+      }
     } catch (err) {
       console.error(err);
       const status = err.response?.status;
@@ -132,8 +167,9 @@ function App() {
 
       {loading ? (
         <div className="surface-card loading-overlay">
-          <div className="spinner" style={{ border: '4px solid #f3f3f3', borderTop: '4px solid var(--primary)', borderRadius: '50%', width: '30px', height: '30px' }}></div>
-          <span>Processing document... This may take a minute.</span>
+          <div className="spinner" style={{ border: '4px solid #f3f3f3', borderTop: '4px solid var(--primary)', borderRadius: '50%', width: '30px', height: '30px', margin: '0 auto' }}></div>
+          <span style={{ display: 'block', marginTop: '10px', textAlign: 'center' }}>Processing document... This may take a minute.</span>
+          <ProgressConsole logs={logs} />
         </div>
       ) : !quizData ? (
         <UploadComponent onProcess={handleProcessPdf} />

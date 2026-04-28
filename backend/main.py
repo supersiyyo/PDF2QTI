@@ -48,7 +48,12 @@ def extract_text_from_pdf(pdf_path: str) -> str:
 
 # --- Gemini Resilience Helpers ---
 
-GEMINI_MODEL_CASCADE = ["gemini-2.5-flash", "gemini-1.5-flash"]
+GEMINI_MODEL_CASCADE = [
+    "gemini-3.1-pro-preview", 
+    "gemini-3.1-flash-lite-preview", 
+    "gemini-2.5-pro", 
+    "gemini-2.5-flash"
+]
 MAX_RETRIES = 3
 RETRY_BASE_DELAY = 2  # seconds
 
@@ -57,13 +62,14 @@ def _is_overload_error(exc: Exception) -> bool:
     msg = str(exc).lower()
     return "503" in msg or "unavailable" in msg or "high demand" in msg
 
-def call_gemini_with_retry(prompt: str, mode: str) -> dict:
+async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None) -> dict:
     """
     Attempt to call the Gemini API with exponential backoff retries.
     Cascades through GEMINI_MODEL_CASCADE if all retries on a model fail.
     Returns a dict with keys: 'data' (parsed JSON) and optionally 'warning' (str).
     """
     import json
+    import asyncio
     client = genai.Client()
     config = {
         "response_mime_type": "application/json",
@@ -75,7 +81,14 @@ def call_gemini_with_retry(prompt: str, mode: str) -> dict:
     for model_idx, model_name in enumerate(GEMINI_MODEL_CASCADE):
         for attempt in range(1, MAX_RETRIES + 1):
             try:
-                print(f"[Gemini] Trying model={model_name}, attempt={attempt}")
+                msg = f"[Gemini] Trying model={model_name}, attempt={attempt}"
+                print(msg)
+                if log_callback:
+                    await log_callback(msg)
+                
+                # generate_content is synchronous in the current SDK version provided 
+                # but we can wrap it or just keep it for now if we don't have async client
+                # Let's assume we want to keep it simple but use asyncio for sleep
                 response = client.models.generate_content(
                     model=model_name,
                     contents=prompt,
@@ -96,10 +109,16 @@ def call_gemini_with_retry(prompt: str, mode: str) -> dict:
                 if _is_overload_error(exc):
                     if attempt < MAX_RETRIES:
                         delay = RETRY_BASE_DELAY * (2 ** (attempt - 1))
-                        print(f"[Gemini] 503 on {model_name} attempt {attempt}. Retrying in {delay}s...")
-                        time.sleep(delay)
+                        msg = f"[Gemini] 503 on {model_name} attempt {attempt}. Retrying in {delay}s..."
+                        print(msg)
+                        if log_callback:
+                            await log_callback(msg)
+                        await asyncio.sleep(delay)
                     else:
-                        print(f"[Gemini] All {MAX_RETRIES} retries exhausted for {model_name}. Cascading...")
+                        msg = f"[Gemini] All {MAX_RETRIES} retries exhausted for {model_name}. Cascading..."
+                        print(msg)
+                        if log_callback:
+                            await log_callback(msg)
                         break  # try next model
                 else:
                     # Non-retriable error — re-raise immediately
@@ -115,57 +134,97 @@ def call_gemini_with_retry(prompt: str, mode: str) -> dict:
 def read_root():
     return {"message": "Welcome to PDF2QTI API"}
 
+from fastapi.responses import StreamingResponse
+import json
+
 @app.post("/api/process-pdf")
 async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
     if mode not in ["generate", "digitize"]:
         raise HTTPException(status_code=400, detail="Invalid mode selected")
 
-    # Guard AI key
     if "GEMINI_API_KEY" not in os.environ:
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY not set in environment.")
 
-    try:
-        # Save uploaded file temporarily
-        temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-        content = await file.read()
-        temp_pdf.write(content)
-        temp_pdf.close()
+    async def progress_generator():
+        try:
+            yield f"data: {json.dumps({'status': 'info', 'message': f'Starting {mode} process for {file.filename}...'})}\n\n"
+            
+            # Save uploaded file temporarily
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Saving temporary PDF file...'})}\n\n"
+            temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+            content = await file.read()
+            temp_pdf.write(content)
+            temp_pdf.close()
 
-        # Extract text
-        extracted_text = extract_text_from_pdf(temp_pdf.name)
-        os.unlink(temp_pdf.name)
+            # Extract text
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Extracting text from PDF using pdfplumber...'})}\n\n"
+            extracted_text = extract_text_from_pdf(temp_pdf.name)
+            os.unlink(temp_pdf.name)
 
-        if not extracted_text.strip():
-            raise HTTPException(status_code=400, detail="Could not extract any text from the provided PDF.")
+            if not extracted_text.strip():
+                yield f"data: {json.dumps({'status': 'error', 'message': 'Could not extract any text from the provided PDF.'})}\n\n"
+                return
 
-        # Prepare AI Prompt
-        if mode == "digitize":
-            prompt_instruction = "Act as a strict data extractor. Extract the exact multiple choice questions and choices from the provided text. If no correct answer is explicitly provided, solve the question to provide the `correct_answer_index`."
-        else:
-            prompt_instruction = "Act as an educator. Synthesize the provided text to invent new, high-quality multiple choice questions based on the content."
+            # Prepare AI Prompt
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Constructing AI prompt...'})}\n\n"
+            if mode == "digitize":
+                prompt_instruction = "Act as a strict data extractor. Extract the exact multiple choice questions and choices from the provided text. If no correct answer is explicitly provided, solve the question to provide the `correct_answer_index`."
+            else:
+                prompt_instruction = "Act as an educator. Synthesize the provided text to invent new, high-quality multiple choice questions based on the content."
 
-        full_prompt = f"{prompt_instruction}\n\nDocument Text:\n{extracted_text}"
+            full_prompt = f"{prompt_instruction}\n\nDocument Text:\n{extracted_text}"
 
-        # Call Gemini with retry + model fallback
-        result = call_gemini_with_retry(full_prompt, mode)
-        data = result["data"]
+            # Call Gemini
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Sending request to Gemini AI...'})}\n\n"
+            
+            # Since we can't yield from the callback, we define it here
+            # But await call_gemini_with_retry will block until it returns.
+            # To get real-time logs, we would need to run it in a task and read from a queue.
+            # For simplicity, let's just make the callback print and we yield after? 
+            # No, let's do it right.
+            
+            import asyncio
+            queue = asyncio.Queue()
 
-        original_name = file.filename
-        if original_name.lower().endswith(".pdf"):
-            original_name = original_name[:-4]
-        data["quiz_title"] = f"P2Q_{original_name}"
+            async def log_callback(msg):
+                await queue.put({'status': 'info', 'message': msg})
 
-        # Pass through any warning for the frontend to display
-        if "warning" in result:
-            data["_warning"] = result["warning"]
+            # Run AI call in background task
+            task = asyncio.create_task(call_gemini_with_retry(full_prompt, mode, log_callback=log_callback))
 
-        return data
+            # While task is running, check queue
+            while not task.done():
+                try:
+                    # Wait for a message with a timeout to check task status
+                    msg = await asyncio.wait_for(queue.get(), timeout=0.1)
+                    yield f"data: {json.dumps(msg)}\n\n"
+                except asyncio.TimeoutError:
+                    continue
 
-    except HTTPException:
-        raise  # Re-raise structured HTTP exceptions as-is
-    except Exception as e:
-        print(f"[Error] Unexpected: {e}")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred. Please try again.")
+            # Final check of queue
+            while not queue.empty():
+                msg = await queue.get()
+                yield f"data: {json.dumps(msg)}\n\n"
+
+            result = await task
+            data = result["data"]
+
+            original_name = file.filename
+            if original_name.lower().endswith(".pdf"):
+                original_name = original_name[:-4]
+            data["quiz_title"] = f"P2Q_{original_name}"
+
+            if "warning" in result:
+                data["_warning"] = result["warning"]
+                yield f"data: {json.dumps({'status': 'warning', 'message': result['warning']})}\n\n"
+
+            yield f"data: {json.dumps({'status': 'success', 'message': 'Quiz generated successfully!', 'data': data})}\n\n"
+
+        except Exception as e:
+            print(f"[Error] Unexpected: {e}")
+            yield f"data: {json.dumps({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'})}\n\n"
+
+    return StreamingResponse(progress_generator(), media_type="text/event-stream")
 
 
 class ExtractQTIRequest(BaseModel):

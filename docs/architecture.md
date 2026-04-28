@@ -10,16 +10,14 @@ Located in the `/backend` directory, the backend serves as the core processing e
 
 **Core Technologies:**
 
-- **FastAPI**: Provides a high-performance asynchronous web framework for building the API endpoints.
-- **Uvicorn**: An ASGI web server implementation for Python used to serve the FastAPI application.
-- **pdfplumber**: Handles the extraction of text from uploaded PDF documents.
-- **google-genai**: The official SDK used to interface with Google's Gemini API. The backend uses a model cascade (`gemini-2.5-flash` → `gemini-1.5-flash`) with exponential backoff retries to handle API overload conditions gracefully.
+- **FastAPI**: Provides a high-performance asynchronous web framework. The `/api/process-pdf` endpoint now utilizes **StreamingResponse (SSE)** to provide real-time logs to the client during processing.
+- **google-genai**: The backend uses an expanded model cascade including **Gemini 3.1 Pro/Flash** and **Gemini 2.5 Pro/Flash** models for enhanced extraction and generation.
 - **text2qti**: A CLI tool utilized under the hood to compile markdown representations of quizzes into valid QTI `.zip` files.
 - **Pydantic**: Enforces strict typing and data validation for the JSON structures interacting with the AI.
 
 **Key Workflows:**
 
-- **File Upload (`/api/process-pdf`)**: Receives a PDF file via a multipart form request. It writes the file to a temporary location, extracts the text using `pdfplumber`, and constructs a strict prompt. The prompt is passed to the `call_gemini_with_retry()` helper, which attempts the primary model (`gemini-2.5-flash`) up to 3 times with exponential backoff (2s, 4s, 8s). If all retries are exhausted, it cascades to the fallback model (`gemini-1.5-flash`). If all models fail, a structured `503` response is returned. When a fallback model is used, a `_warning` field is included in the response to notify the user.
+- **File Upload (`/api/process-pdf`)**: Receives a PDF file via a multipart form request. It streams progress events (using `asyncio.Queue` to bridge the AI callback and the generator) such as "Extracting text", "Sending request to Gemini", and AI retry attempts. The final JSON quiz data is sent as a `success` event at the end of the stream.
 - **QTI Generation (`/api/export-qti`)**: Receives validated JSON containing the quiz questions. It sanitizes the AI-generated questions and choices (stripping newlines) to prevent parser failures. It then dynamically builds a markdown string structured specifically for `text2qti`, spawns a subprocess to execute `text2qti`, and streams the resulting `.zip` file back to the client.
 
 **Error Handling Strategy:**

@@ -6,3 +6,6 @@ google-genai
 text2qti
 pydantic
 python-dotenv
+pytest
+pytest-asyncio
+httpx
