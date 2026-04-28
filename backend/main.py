@@ -49,18 +49,18 @@ def extract_text_from_pdf(pdf_path: str) -> str:
 # --- Gemini Resilience Helpers ---
 
 GEMINI_MODEL_CASCADE = [
-    "gemini-3.1-pro-preview", 
-    "gemini-3.1-flash-lite-preview", 
+    "gemini-3-flash-preview",
     "gemini-2.5-pro", 
-    "gemini-2.5-flash"
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite"
 ]
 MAX_RETRIES = 3
 RETRY_BASE_DELAY = 2  # seconds
 
 def _is_overload_error(exc: Exception) -> bool:
-    """Return True if the exception is a Gemini 503 / UNAVAILABLE error."""
+    """Return True if the exception is a Gemini 503 (UNAVAILABLE) or 429 (RESOURCE_EXHAUSTED) error."""
     msg = str(exc).lower()
-    return "503" in msg or "unavailable" in msg or "high demand" in msg
+    return any(term in msg for term in ["503", "unavailable", "high demand", "429", "quota", "exhausted"])
 
 async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None) -> dict:
     """

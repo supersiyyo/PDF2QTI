@@ -11,7 +11,7 @@ Located in the `/backend` directory, the backend serves as the core processing e
 **Core Technologies:**
 
 - **FastAPI**: Provides a high-performance asynchronous web framework. The `/api/process-pdf` endpoint now utilizes **StreamingResponse (SSE)** to provide real-time logs to the client during processing.
-- **google-genai**: The backend uses an expanded model cascade including **Gemini 3.1 Pro/Flash** and **Gemini 2.5 Pro/Flash** models for enhanced extraction and generation.
+- **google-genai**: The backend uses an expanded model cascade including **Gemini 3 Flash** and **Gemini 2.5 Pro/Flash** models for enhanced extraction and generation.
 - **text2qti**: A CLI tool utilized under the hood to compile markdown representations of quizzes into valid QTI `.zip` files.
 - **Pydantic**: Enforces strict typing and data validation for the JSON structures interacting with the AI.
 
