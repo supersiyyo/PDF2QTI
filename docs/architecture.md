@@ -11,7 +11,7 @@ Located in the `/backend` directory, the backend serves as the core processing e
 **Core Technologies:**
 
 - **FastAPI**: Provides a high-performance asynchronous web framework. The `/api/process-pdf` endpoint now utilizes **StreamingResponse (SSE)** to provide real-time logs to the client during processing.
-- **google-genai**: The backend uses an expanded model cascade including **Gemini 3 Flash** and **Gemini 2.5 Pro/Flash** models for enhanced extraction and generation.
+- **google-genai**: The backend uses a two-model cascade — **Gemini 2.5 Flash** as primary, falling back to **Gemini 2.5 Flash-Lite** — with automatic `429`/`503` detection and exponential-backoff retries. Synchronous SDK calls are wrapped in `asyncio.to_thread` to keep the event loop unblocked.
 - **text2qti**: A CLI tool utilized under the hood to compile markdown representations of quizzes into valid QTI `.zip` files.
 - **Pydantic**: Enforces strict typing and data validation for the JSON structures interacting with the AI.
 
@@ -40,8 +40,10 @@ Located in the `/frontend` directory, the frontend provides an intuitive user in
 **Key Workflows:**
 
 - Users upload a file and select a mode ("Digitize" or "Generate").
-- Axios posts the file to the backend and awaits the generated JSON question bank.
-- **503 / Overload Handling**: If the backend returns a `503`, the UI displays a friendly error message and a **Retry** button. The last `(file, mode)` call is saved in state so the user can retry with one click without re-uploading.
-- **Fallback Model Notification**: If the backend used a secondary model, a dismissible amber warning banner is shown to the user.
-- The UI renders the returned questions allowing the user to review them.
+- The frontend reads the SSE stream from `/api/process-pdf` using the Fetch API and a `ReadableStream` reader. Each SSE payload carries `{ status, message, model }` fields.
+- **ProcessingState skeleton UI**: While processing, a high-fidelity shimmer skeleton mirrors the exact layout of the real `PreviewEditor` (action bar, card, title input, question blocks, choice rows). A live elapsed timer and rotating educational facts keep the user informed. The model badge updates in real-time as the backend cascades through models.
+- **503 / Overload Handling**: If the backend returns a `503`, the UI displays a friendly error message and a **Retry** button.
+- **Fallback Model Notification**: If a secondary model was used due to high demand, a dismissible **green** notice (✨) is shown — styled to feel informative rather than alarming.
+- **Smooth Transition**: When processing completes, the `PreviewEditor` fades in with a 450ms rise-and-fade animation (`fadeInResult`).
+- The `PreviewEditor` shows a **"X Questions" badge** next to the heading and a numbered **QUESTION X** badge above each question for easy reference.
 - A final export action posts the reviewed questions to the QTI generation endpoint, which triggers a browser download of the returned QTI `.zip` file.

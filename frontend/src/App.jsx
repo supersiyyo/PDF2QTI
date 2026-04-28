@@ -175,17 +175,17 @@ function App() {
       )}
 
       {loading ? (
-        <div className="surface-card loading-overlay">
-          <ProcessingState status={currentStatus} model={currentModel} />
-        </div>
+        <ProcessingState status={currentStatus} model={currentModel} />
       ) : !quizData ? (
         <UploadComponent onProcess={handleProcessPdf} />
       ) : (
-        <PreviewEditor 
-          initialData={quizData} 
-          onExport={handleExportQti}
-          onReset={() => { setQuizData(null); setWarning(null); }}
-        />
+        <div style={{ animation: 'fadeInResult 0.45s ease' }}>
+          <PreviewEditor 
+            initialData={quizData} 
+            onExport={handleExportQti}
+            onReset={() => { setQuizData(null); setWarning(null); }}
+          />
+        </div>
       )}
     </div>
   );

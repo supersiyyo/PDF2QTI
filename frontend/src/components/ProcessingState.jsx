@@ -108,52 +108,19 @@ const ProcessingState = ({ status, model }) => {
           {/* 3 question blocks */}
           {[1, 2, 3].map(i => (
             <div key={i} className="question-block" style={{ marginBottom: '2rem' }}>
-              {/* QUESTION X badge */}
-              <div style={{ marginBottom: '12px' }}>
-                <span style={{
-                  background: 'var(--primary)', color: '#fff',
-                  fontSize: '0.65rem', fontWeight: 700,
-                  padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase'
-                }}>Question {i}</span>
-              </div>
-
               {/* Question text input (full-width) */}
               <Shimmer style={{ width: '100%', height: '36px', borderRadius: '4px', marginBottom: '16px' }} />
 
-              {/* 4 choice rows — radio + full-width input + optional Correct badge */}
-              {[1, 2, 3, 4].map(j => {
-                const isCorrect = j === 2;
-                return (
-                  <div key={j} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                    {/* radio button */}
-                    <div style={{
-                      width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
-                      border: `2px solid ${isCorrect ? '#22c55e' : '#e2e8f0'}`,
-                      background: isCorrect ? '#22c55e' : 'transparent',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}>
-                      {isCorrect && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#fff' }} />}
-                    </div>
-                    {/* choice text input */}
-                    <Shimmer style={{
-                      flex: 1, height: '34px', borderRadius: '4px',
-                      ...(isCorrect ? {
-                        background: 'linear-gradient(90deg,#dcfce7 0%,#bbf7d0 50%,#dcfce7 100%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'sk-shimmer 1.5s infinite'
-                      } : {})
-                    }} />
-                    {/* Correct badge */}
-                    {isCorrect && (
-                      <span style={{
-                        fontSize: '0.7rem', fontWeight: 700, color: '#15803d',
-                        background: '#dcfce7', padding: '2px 8px', borderRadius: '4px',
-                        border: '1px solid #86efac', flexShrink: 0
-                      }}>Correct</span>
-                    )}
-                  </div>
-                );
-              })}
+              {/* 4 plain choice rows — no correct highlighting in skeleton */}
+              {[1, 2, 3, 4].map(j => (
+                <div key={j} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <div style={{
+                    width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
+                    border: '2px solid #e2e8f0', background: 'transparent'
+                  }} />
+                  <Shimmer style={{ flex: 1, height: '34px', borderRadius: '4px' }} />
+                </div>
+              ))}
             </div>
           ))}
         </div>
