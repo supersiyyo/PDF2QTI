@@ -117,7 +117,7 @@ class ExtractQTIRequest(BaseModel):
 async def export_qti(data: ExtractQTIRequest):
     try:
         # Construct markdown string for text2qti
-        markdown_content = f"Title: {data.quiz_title}\n\n"
+        markdown_content = f"Quiz title: {data.quiz_title}\n\n"
         for i, q in enumerate(data.questions, 1):
             markdown_content += f"{i}. {q.question_text}\n"
             for j, choice in enumerate(q.choices):
