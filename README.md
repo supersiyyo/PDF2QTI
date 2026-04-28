@@ -1,5 +1,4 @@
-# PDF2QTI
-# Doc-to-Quiz
+# Doc-to-Quiz (formerly PDF2QTI)
 
 Doc-to-Quiz is a full-stack application designed to automatically convert PDF documents into Canvas-ready QTI (Question and Test Interoperability) files. It leverages advanced AI to either extract explicit multiple-choice questions from exams or intelligently generate new questions from study materials.
 
@@ -11,6 +10,7 @@ Doc-to-Quiz is a full-stack application designed to automatically convert PDF do
   - **Generate Mode**: Synthesizes study materials and generates new, relevant multiple-choice questions.
 - **QTI Export Engine**: Converts extracted questions into a downloadable `.zip` package formatted as a QTI quiz, fully compatible with learning management systems like Canvas.
 - **Decoupled Architecture**: Features a fast, asynchronous Python/FastAPI backend and a responsive React/Vite frontend.
+- **CI/CD Automation**: Fully automated deployment pipeline using GitHub Actions to deploy the backend to Railway and the frontend to SiteGround via secure FTP.
 
 ## Quick Start (Local Development)
 
