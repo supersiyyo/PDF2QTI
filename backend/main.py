@@ -33,7 +33,6 @@ class Question(BaseModel):
     correct_answer_index: int = Field(description="The 0-based index of the correct answer in the choices list.")
 
 class QuizExtraction(BaseModel):
-    quiz_title: str = Field(description="A short, concise title for this quiz based on the document content.")
     questions: List[Question]
 
 def extract_text_from_pdf(pdf_path: str) -> str:
@@ -99,6 +98,12 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
         # Let frontend handle parsing or we parse it and return dict
         import json
         data = json.loads(result_json)
+        
+        original_name = file.filename
+        if original_name.lower().endswith(".pdf"):
+            original_name = original_name[:-4]
+        data["quiz_title"] = f"P2Q_{original_name}"
+        
         return data
 
     except Exception as e:
