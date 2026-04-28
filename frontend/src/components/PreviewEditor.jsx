@@ -2,8 +2,14 @@ import React, { useState } from 'react';
 import { Download, ArrowLeft } from 'lucide-react';
 
 const PreviewEditor = ({ initialData, onExport, onReset }) => {
-  // initialData structural assumption: { questions: [...] }
+  // initialData structural assumption: { quiz_title: "", questions: [...] }
   const [data, setData] = useState(initialData);
+
+  const handleTitleChange = (text) => {
+    const newData = { ...data };
+    newData.quiz_title = text;
+    setData(newData);
+  };
 
   const handleQuestionTextChange = (qIndex, text) => {
     const newData = { ...data };
@@ -42,9 +48,20 @@ const PreviewEditor = ({ initialData, onExport, onReset }) => {
       </div>
 
       <div className="surface-card">
-        <h2 style={{ marginBottom: '2rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
-          Preview & Edit Questions
+        <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', color: 'var(--text-secondary)' }}>
+          Preview & Edit Quiz
         </h2>
+
+        <div style={{ marginBottom: '3rem' }}>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Quiz Title</label>
+          <input 
+            type="text"
+            value={data?.quiz_title || ''}
+            onChange={(e) => handleTitleChange(e.target.value)}
+            style={{ width: '100%', fontSize: '1.5rem', fontWeight: 700, padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--primary)' }}
+            placeholder="Enter Quiz Title"
+          />
+        </div>
         
         {data?.questions?.map((q, qIndex) => (
           <div key={qIndex} className="question-block">

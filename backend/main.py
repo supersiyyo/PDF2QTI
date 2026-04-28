@@ -33,6 +33,7 @@ class Question(BaseModel):
     correct_answer_index: int = Field(description="The 0-based index of the correct answer in the choices list.")
 
 class QuizExtraction(BaseModel):
+    quiz_title: str = Field(description="A short, concise title for this quiz based on the document content.")
     questions: List[Question]
 
 def extract_text_from_pdf(pdf_path: str) -> str:
@@ -104,13 +105,14 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 class ExtractQTIRequest(BaseModel):
+    quiz_title: str
     questions: List[Question]
 
 @app.post("/api/export-qti")
 async def export_qti(data: ExtractQTIRequest):
     try:
         # Construct markdown string for text2qti
-        markdown_content = ""
+        markdown_content = f"Title: {data.quiz_title}\n\n"
         for i, q in enumerate(data.questions, 1):
             markdown_content += f"{i}. {q.question_text}\n"
             for j, choice in enumerate(q.choices):
@@ -142,11 +144,14 @@ async def export_qti(data: ExtractQTIRequest):
         except subprocess.CalledProcessError as sub_e:
             raise Exception(f"text2qti compilation failed: {sub_e.stderr}")
 
+        safe_filename = "".join(c for c in data.quiz_title if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        safe_filename = safe_filename.replace(' ', '_') or 'quiz'
+        
         # Return file
         return FileResponse(
             path=qti_path, 
             media_type="application/zip", 
-            filename="quiz.zip",
+            filename=f"{safe_filename}.zip",
             # FastAPI can't delete immediately if streaming, 
             # A background task is better but this works for development
         )
