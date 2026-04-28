@@ -53,10 +53,17 @@ Doc-to-Quiz is a full-stack application designed to automatically convert PDF do
 
 ### Running the Application
 
-You can use the provided startup script (Linux/GNOME) from the project root:
+You can use the provided startup scripts from the project root:
 
+**Linux (GNOME/xterm):**
 ```bash
 ./start_app.sh
+```
+
+**Windows:**
+Double-click `start_app.bat` or run it from CMD:
+```cmd
+start_app.bat
 ```
 
 Or run the services manually:
