@@ -1,6 +1,7 @@
 # PDF2QTI
+# Doc-to-Quiz
 
-PDF2QTI is a full-stack application designed to automatically convert PDF documents into Canvas-ready QTI (Question and Test Interoperability) files. It leverages advanced AI to either extract explicit multiple-choice questions from exams or intelligently generate new questions from study materials.
+Doc-to-Quiz is a full-stack application designed to automatically convert PDF documents into Canvas-ready QTI (Question and Test Interoperability) files. It leverages advanced AI to either extract explicit multiple-choice questions from exams or intelligently generate new questions from study materials.
 
 ## Features
 
@@ -14,6 +15,7 @@ PDF2QTI is a full-stack application designed to automatically convert PDF docume
 ## Quick Start (Local Development)
 
 ### Prerequisites
+
 - Python 3.10+
 - Node.js & npm
 - A valid Google Gemini API Key
@@ -21,19 +23,23 @@ PDF2QTI is a full-stack application designed to automatically convert PDF docume
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone <your-repo-url>
    cd PDF2QTI
    ```
 
 2. **Setup the Backend:**
+
    ```bash
    cd backend
    python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    ```
+
    Create a `.env` file in the `backend/` directory:
+
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
    ```
@@ -47,6 +53,7 @@ PDF2QTI is a full-stack application designed to automatically convert PDF docume
 ### Running the Application
 
 You can use the provided startup script (Linux/GNOME) from the project root:
+
 ```bash
 ./start_app.sh
 ```
@@ -54,25 +61,31 @@ You can use the provided startup script (Linux/GNOME) from the project root:
 Or run the services manually:
 
 **Backend:**
+
 ```bash
 cd backend
 source .venv/bin/activate
 uvicorn main:app --reload
 ```
+
 The API will be available at `http://127.0.0.1:8000`.
 
 **Frontend:**
+
 ```bash
 cd frontend
 npm run dev
 ```
+
 The frontend will be available at `http://localhost:5173`.
 
 ## Documentation
 
 For more detailed information, please refer to the following documentation files:
+
 - [Architecture Overview](docs/architecture.md)
 - [Deployment & Migration Guide](docs/deployment.md)
 
 ## License
+
 MIT License

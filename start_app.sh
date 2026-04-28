@@ -16,10 +16,10 @@ if command -v gnome-terminal &> /dev/null; then
 # Fallback to xterm if gnome-terminal isn't available
 elif command -v xterm &> /dev/null; then
     echo "Launching Backend..."
-    xterm -T "PDF2QTI Backend" -e bash -c "cd \"$PROJECT_DIR/backend\" && source .venv/bin/activate && uvicorn main:app --reload; exec bash" &
+    xterm -T "Doc-to-Quiz Backend" -e bash -c "cd \"$PROJECT_DIR/backend\" && source .venv/bin/activate && uvicorn main:app --reload; exec bash" &
     
     echo "Launching Frontend..."
-    xterm -T "PDF2QTI Frontend" -e bash -c "cd \"$PROJECT_DIR/frontend\" && npm run dev; exec bash" &
+    xterm -T "Doc-to-Quiz Frontend" -e bash -c "cd \"$PROJECT_DIR/frontend\" && npm run dev; exec bash" &
 
 else
     echo "Error: Could not find gnome-terminal or xterm to launch separate windows."
