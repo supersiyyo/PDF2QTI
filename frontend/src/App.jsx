@@ -42,7 +42,8 @@ function App() {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      while (true) {
+      let streamActive = true;
+      while (streamActive) {
         const { value, done } = await reader.read();
         if (done) break;
 
@@ -60,8 +61,12 @@ function App() {
                 if (payload.data._warning) {
                   setWarning(payload.data._warning);
                 }
+                streamActive = false; // Break the outer loop
+                break; // Break the lines loop
               } else if (payload.status === 'error') {
                 setError(payload.message);
+                streamActive = false;
+                break;
               } else {
                 setLogs(prev => [...prev, payload]);
               }

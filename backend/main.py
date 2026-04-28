@@ -49,8 +49,6 @@ def extract_text_from_pdf(pdf_path: str) -> str:
 # --- Gemini Resilience Helpers ---
 
 GEMINI_MODEL_CASCADE = [
-    "gemini-3-flash-preview",
-    "gemini-2.5-pro", 
     "gemini-2.5-flash",
     "gemini-2.5-flash-lite"
 ]
