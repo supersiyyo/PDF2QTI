@@ -2,6 +2,34 @@ import React from 'react';
 import { Cpu, Sparkles, Loader2 } from 'lucide-react';
 
 const ProcessingState = ({ status, model }) => {
+  const [factIndex, setFactIndex] = React.useState(0);
+  
+  const facts = [
+    "Our system uses a model cascade to ensure 99.9% uptime.",
+    "Gemini 2.5 Flash can process a 100-page PDF in seconds.",
+    "We sanitize every string to ensure your Canvas quiz never crashes.",
+    "AI is currently solving questions to find the correct answer indices.",
+    "Did you know? QTI is the industry standard for digital assessments.",
+    "We automatically remove line breaks to keep your quiz clean.",
+    "Multiple models work in parallel to find the best extraction path."
+  ];
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setFactIndex((prev) => (prev + 1) % facts.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const [discoveryIndex, setDiscoveryIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setDiscoveryIndex((prev) => Math.min(prev + 1, 5));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="processing-container">
       <div className="status-header">
@@ -11,13 +39,17 @@ const ProcessingState = ({ status, model }) => {
         </div>
         <div className="status-indicator">
           <Loader2 size={16} className="spinner-icon" />
-          <span className="status-text">{status || 'Processing...'}</span>
+          <div className="status-stack">
+            <span className="status-text">{status || 'Processing...'}</span>
+            <span className="fact-text">{facts[factIndex]}</span>
+          </div>
         </div>
       </div>
 
       <div className="skeleton-quiz">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="skeleton-question">
+        {[...Array(discoveryIndex + 1)].map((_, i) => (
+          <div key={i} className="skeleton-question fade-in">
+            <div className="question-label">Question {i + 1} discovered...</div>
             <div className="skeleton-line shimmer title"></div>
             <div className="skeleton-options">
               {[1, 2, 3, 4].map((j) => (
@@ -59,16 +91,31 @@ const ProcessingState = ({ status, model }) => {
         .status-indicator {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 12px;
           color: #64748b;
           font-size: 0.875rem;
+        }
+        .status-stack {
+          display: flex;
+          flex-direction: column;
         }
         .spinner-icon {
           animation: spin 1s linear infinite;
           color: #3b82f6;
         }
         .status-text {
-          font-weight: 500;
+          font-weight: 600;
+          color: #1e293b;
+        }
+        .fact-text {
+          font-size: 0.75rem;
+          color: #64748b;
+          animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .skeleton-quiz {
@@ -81,6 +128,16 @@ const ProcessingState = ({ status, model }) => {
           border: 1px solid #f1f5f9;
           border-radius: 12px;
           padding: 20px;
+          position: relative;
+          overflow: hidden;
+        }
+        .question-label {
+          font-size: 0.65rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: #3b82f6;
+          margin-bottom: 12px;
+          letter-spacing: 0.05em;
         }
         .skeleton-line {
           height: 12px;
