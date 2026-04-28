@@ -89,4 +89,3 @@ For more detailed information, please refer to the following documentation files
 ## License
 
 MIT License
-.
