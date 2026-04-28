@@ -1,3 +1,7 @@
+---
+description: Finalizes a feature by updating docs and preparing a PR.
+---
+
 # Finalize Feature Workflow
 
 **Description:** This workflow should be executed manually via `/finalize-feature` after the user has successfully tested the local code changes. It handles the heavy lifting of updating documentation and preparing the branch for the GitHub Actions PR check.
