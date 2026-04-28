@@ -136,15 +136,15 @@ function App() {
       </header>
 
       {warning && (
-        <div className="surface-card" style={{ borderColor: '#d97706', backgroundColor: '#fffbeb' }}>
-          <p style={{ color: '#92400e', fontWeight: 500, margin: 0 }}>
-            ⚠️ {warning}
+        <div className="surface-card" style={{ borderColor: '#10b981', backgroundColor: '#f0fdf4', marginBottom: '1rem' }}>
+          <p style={{ color: '#064e3b', fontWeight: 500, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '1.2rem' }}>✨</span> {warning}
           </p>
           <button
             onClick={() => setWarning(null)}
-            style={{ marginTop: '6px', fontSize: '0.75rem', background: 'none', border: 'none', color: '#92400e', cursor: 'pointer', padding: 0 }}
+            style={{ marginTop: '6px', fontSize: '0.75rem', background: 'none', border: 'none', color: '#065f46', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
           >
-            Dismiss
+            Dismiss Notice
           </button>
         </div>
       )}
