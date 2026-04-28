@@ -103,9 +103,8 @@ async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None) -> d
                 # Notify user if we fell back to a secondary model
                 if model_idx > 0:
                     result["warning"] = (
-                        f"The primary AI model was unavailable. "
-                        f"Your quiz was generated using a backup model ({model_name}). "
-                        f"Results may vary slightly."
+                        f"The primary AI model is currently experiencing high usage. "
+                        f"To avoid delays, your quiz was generated using a high-availability backup model ({model_name})."
                     )
                 return result
             except Exception as exc:

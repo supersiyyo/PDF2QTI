@@ -48,8 +48,11 @@ const PreviewEditor = ({ initialData, onExport, onReset }) => {
       </div>
 
       <div className="surface-card">
-        <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', color: 'var(--text-secondary)' }}>
+        <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
           Preview & Edit Quiz
+          <span style={{ fontSize: '0.75rem', backgroundColor: '#eff6ff', color: '#1d4ed8', padding: '4px 10px', borderRadius: '12px', fontWeight: 600, border: '1px solid #dbeafe' }}>
+            {data?.questions?.length || 0} Questions
+          </span>
         </h2>
 
         <div style={{ marginBottom: '3rem' }}>
