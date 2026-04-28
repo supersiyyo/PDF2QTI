@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import UploadComponent from './components/UploadComponent';
 import PreviewEditor from './components/PreviewEditor';
-import ProgressConsole from './components/ProgressConsole';
+import ProcessingState from './components/ProcessingState';
 
 function App() {
   const [quizData, setQuizData] = useState(null);
@@ -11,7 +11,8 @@ function App() {
   const [isRetryable, setIsRetryable] = useState(false);
   const [lastCall, setLastCall] = useState(null); // { file, mode }
   const [warning, setWarning] = useState(null);
-  const [logs, setLogs] = useState([]);
+  const [currentStatus, setCurrentStatus] = useState('');
+  const [currentModel, setCurrentModel] = useState('');
 
   const handleProcessPdf = async (file, mode) => {
     setLoading(true);
@@ -68,7 +69,8 @@ function App() {
                 streamActive = false;
                 break;
               } else {
-                setLogs(prev => [...prev, payload]);
+                setCurrentStatus(payload.message);
+                if (payload.model) setCurrentModel(payload.model);
               }
             } catch (e) {
               console.error("Error parsing SSE chunk", e);
@@ -172,9 +174,7 @@ function App() {
 
       {loading ? (
         <div className="surface-card loading-overlay">
-          <div className="spinner" style={{ border: '4px solid #f3f3f3', borderTop: '4px solid var(--primary)', borderRadius: '50%', width: '30px', height: '30px', margin: '0 auto' }}></div>
-          <span style={{ display: 'block', marginTop: '10px', textAlign: 'center' }}>Processing document... This may take a minute.</span>
-          <ProgressConsole logs={logs} />
+          <ProcessingState status={currentStatus} model={currentModel} />
         </div>
       ) : !quizData ? (
         <UploadComponent onProcess={handleProcessPdf} />

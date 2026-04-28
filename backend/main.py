@@ -79,10 +79,10 @@ async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None) -> d
     for model_idx, model_name in enumerate(GEMINI_MODEL_CASCADE):
         for attempt in range(1, MAX_RETRIES + 1):
             try:
-                msg = f"[Gemini] Trying model={model_name}, attempt={attempt}"
-                print(msg)
+                msg = f"AI is working with {model_name}..."
+                print(f"[Gemini] Trying {model_name} (Attempt {attempt})")
                 if log_callback:
-                    await log_callback(msg)
+                    await log_callback({"message": msg, "model": model_name})
                 
                 # generate_content is synchronous; wrap in to_thread to avoid blocking event loop
                 response = await asyncio.to_thread(
@@ -117,16 +117,16 @@ async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None) -> d
                 if is_retriable:
                     if attempt < MAX_RETRIES:
                         delay = RETRY_BASE_DELAY * (2 ** (attempt - 1))
-                        msg = f"[Gemini] Error on {model_name} (Attempt {attempt}): {str(exc)}. Retrying in {delay}s..."
-                        print(msg)
+                        msg = f"AI encountered an issue. Retrying in {delay}s..."
+                        print(f"[Gemini] Error on {model_name} (Attempt {attempt}): {str(exc)}")
                         if log_callback:
-                            await log_callback(msg)
+                            await log_callback({"message": msg, "model": model_name})
                         await asyncio.sleep(delay)
                     else:
-                        msg = f"[Gemini] All {MAX_RETRIES} retries exhausted for {model_name}. Cascading..."
-                        print(msg)
+                        msg = f"Model {model_name} exhausted. Switching to backup..."
+                        print(f"[Gemini] All {MAX_RETRIES} retries exhausted for {model_name}. Cascading...")
                         if log_callback:
-                            await log_callback(msg)
+                            await log_callback({"message": msg, "model": model_name})
                         break  # try next model
                 else:
                     # Non-retriable error — re-raise immediately
@@ -155,17 +155,17 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
 
     async def progress_generator():
         try:
-            yield f"data: {json.dumps({'status': 'info', 'message': f'Starting {mode} process for {file.filename}...'})}\n\n"
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Initializing...', 'model': 'System'})}\n\n"
             
             # Save uploaded file temporarily
-            yield f"data: {json.dumps({'status': 'info', 'message': 'Saving temporary PDF file...'})}\n\n"
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Reading document...', 'model': 'System'})}\n\n"
             temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
             content = await file.read()
             temp_pdf.write(content)
             temp_pdf.close()
 
             # Extract text
-            yield f"data: {json.dumps({'status': 'info', 'message': 'Extracting text from PDF using pdfplumber...'})}\n\n"
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Extracting text...', 'model': 'System'})}\n\n"
             extracted_text = extract_text_from_pdf(temp_pdf.name)
             os.unlink(temp_pdf.name)
 
@@ -174,7 +174,7 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
                 return
 
             # Prepare AI Prompt
-            yield f"data: {json.dumps({'status': 'info', 'message': 'Constructing AI prompt...'})}\n\n"
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Analyzing content...', 'model': 'System'})}\n\n"
             if mode == "digitize":
                 prompt_instruction = "Act as a strict data extractor. Extract the exact multiple choice questions and choices from the provided text. If no correct answer is explicitly provided, solve the question to provide the `correct_answer_index`."
             else:
@@ -183,7 +183,7 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
             full_prompt = f"{prompt_instruction}\n\nDocument Text:\n{extracted_text}"
 
             # Call Gemini
-            yield f"data: {json.dumps({'status': 'info', 'message': 'Sending request to Gemini AI...'})}\n\n"
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Generating questions...', 'model': 'Gemini'})}\n\n"
             
             # Since we can't yield from the callback, we define it here
             # But await call_gemini_with_retry will block until it returns.
