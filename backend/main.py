@@ -86,15 +86,21 @@ async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None) -> d
                 if log_callback:
                     await log_callback(msg)
                 
-                # generate_content is synchronous in the current SDK version provided 
-                # but we can wrap it or just keep it for now if we don't have async client
-                # Let's assume we want to keep it simple but use asyncio for sleep
-                response = client.models.generate_content(
+                # generate_content is synchronous; wrap in to_thread to avoid blocking event loop
+                response = await asyncio.to_thread(
+                    client.models.generate_content,
                     model=model_name,
                     contents=prompt,
-                    config=config,
+                    config=config
                 )
-                data = json.loads(response.text)
+                
+                try:
+                    data = json.loads(response.text)
+                except json.JSONDecodeError as e:
+                    # If the model fails to return valid JSON, treat it as an overload/transient error
+                    # and allow it to retry or cascade.
+                    raise Exception(f"JSON Parsing Error: {str(e)}")
+                
                 result = {"data": data}
                 # Notify user if we fell back to a secondary model
                 if model_idx > 0:
@@ -106,10 +112,14 @@ async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None) -> d
                 return result
             except Exception as exc:
                 last_exc = exc
-                if _is_overload_error(exc):
+                # Now _is_overload_error handles typical API errors, 
+                # and we also catch our custom JSON Parsing Error here.
+                is_retriable = _is_overload_error(exc) or "JSON Parsing Error" in str(exc)
+                
+                if is_retriable:
                     if attempt < MAX_RETRIES:
                         delay = RETRY_BASE_DELAY * (2 ** (attempt - 1))
-                        msg = f"[Gemini] 503 on {model_name} attempt {attempt}. Retrying in {delay}s..."
+                        msg = f"[Gemini] Error on {model_name} (Attempt {attempt}): {str(exc)}. Retrying in {delay}s..."
                         print(msg)
                         if log_callback:
                             await log_callback(msg)
