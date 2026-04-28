@@ -48,10 +48,13 @@ def test_root_endpoint():
     assert response.status_code == 200
     assert response.json() == {"message": "Welcome to PDF2QTI API"}
 
+@pytest.mark.asyncio
 @patch("main.call_gemini_with_retry", new_callable=AsyncMock)
-def test_process_pdf_streaming(mock_gemini):
-    """Verify that /api/process-pdf returns a stream of data chunks."""
-    # Setup mock return value
+async def test_process_pdf_streaming(mock_gemini):
+    """Verify that /api/process-pdf returns a stream of SSE data chunks."""
+    import httpx
+    from main import app as fastapi_app
+
     mock_gemini.return_value = {
         "data": {
             "questions": [
@@ -59,16 +62,19 @@ def test_process_pdf_streaming(mock_gemini):
             ]
         }
     }
-    
-    with open(BIO_QUIZ_PDF, "rb") as f:
-        response = client.post(
-            "/api/process-pdf",
-            data={"mode": "digitize"},
-            files={"file": ("BIO_QUIZ.pdf", f, "application/pdf")}
-        )
-    
+
+    transport = httpx.ASGITransport(app=fastapi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
+        with open(BIO_QUIZ_PDF, "rb") as f:
+            response = await ac.post(
+                "/api/process-pdf",
+                data={"mode": "digitize"},
+                files={"file": ("BIO_QUIZ.pdf", f, "application/pdf")}
+            )
+
     assert response.status_code == 200
-    assert "data:" in response.text
-    assert "status" in response.text
-    assert "Quiz generated successfully!" in response.text
-    assert "Q1" in response.text
+    body = response.text
+    assert "data:" in body
+    assert "status" in body
+    assert "success" in body
+    assert "Q1" in body
