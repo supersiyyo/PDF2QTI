@@ -38,6 +38,6 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./frontend/dist/
-        # Ensure we don't accidentally overwrite the backend or other root files
-        # It is highly recommended to set the FTP user's root directly to the subdomain folder.
         server-dir: ./
+        # Always re-upload all files to avoid stale hash mismatch
+        dangerous-clean-slate: true
