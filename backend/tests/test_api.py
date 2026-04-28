@@ -53,6 +53,7 @@ def test_root_endpoint():
 async def test_process_pdf_streaming(mock_gemini):
     """Verify that /api/process-pdf returns a stream of SSE data chunks."""
     import httpx
+    from unittest.mock import patch as mock_patch
     from main import app as fastapi_app
 
     mock_gemini.return_value = {
@@ -64,13 +65,15 @@ async def test_process_pdf_streaming(mock_gemini):
     }
 
     transport = httpx.ASGITransport(app=fastapi_app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
-        with open(BIO_QUIZ_PDF, "rb") as f:
-            response = await ac.post(
-                "/api/process-pdf",
-                data={"mode": "digitize"},
-                files={"file": ("BIO_QUIZ.pdf", f, "application/pdf")}
-            )
+    # Patch the API key so the endpoint guard doesn't fire a 500 in CI
+    with mock_patch.dict("os.environ", {"GEMINI_API_KEY": "test-key-ci"}):
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
+            with open(BIO_QUIZ_PDF, "rb") as f:
+                response = await ac.post(
+                    "/api/process-pdf",
+                    data={"mode": "digitize"},
+                    files={"file": ("BIO_QUIZ.pdf", f, "application/pdf")}
+                )
 
     assert response.status_code == 200
     body = response.text
