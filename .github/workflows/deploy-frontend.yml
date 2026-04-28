@@ -38,5 +38,5 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./frontend/dist/
         # Ensure we don't accidentally overwrite the backend or other root files
-        # It is highly recommended to set the FTP user's root directly to the subdomain folder.
-        server-dir: ./
+        # Point explicitly to the SiteGround subdomain folder from the root FTP login
+        server-dir: ./csun.sose.dev/
