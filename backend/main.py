@@ -129,17 +129,18 @@ async def export_qti(data: ExtractQTIRequest):
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(markdown_content)
         
-        # Generate QTI using text2qti API
-        # text2qti CLI does text2qti quiz.md
-        # Using internal text2qti programmatic API:
-        import text2qti.config
-        import text2qti.quiz
-        import text2qti.qti
-        
-        config = text2qti.config.Config()
-        quiz = text2qti.quiz.Quiz(md_path, config=config)
-        qti = text2qti.qti.QTI(quiz)
-        qti.save(qti_path)
+        # Generate QTI using text2qti CLI instead of internal python API which can be unstable
+        import subprocess
+        try:
+            subprocess.run(
+                ["text2qti", md_path], 
+                cwd=base_dir, 
+                check=True, 
+                capture_output=True, 
+                text=True
+            )
+        except subprocess.CalledProcessError as sub_e:
+            raise Exception(f"text2qti compilation failed: {sub_e.stderr}")
 
         # Return file
         return FileResponse(
