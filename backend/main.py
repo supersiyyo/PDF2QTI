@@ -194,8 +194,9 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
             import asyncio
             queue = asyncio.Queue()
 
-            async def log_callback(msg):
-                await queue.put({'status': 'info', 'message': msg})
+            async def log_callback(info):
+                # info is a dict: {"message": "...", "model": "..."}
+                await queue.put({'status': 'info', **info})
 
             # Run AI call in background task
             task = asyncio.create_task(call_gemini_with_retry(full_prompt, mode, log_callback=log_callback))

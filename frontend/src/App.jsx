@@ -19,7 +19,8 @@ function App() {
     setError(null);
     setIsRetryable(false);
     setWarning(null);
-    setLogs([]);
+    setCurrentStatus('');
+    setCurrentModel('');
     setLastCall({ file, mode });
 
     try {
@@ -69,7 +70,8 @@ function App() {
                 streamActive = false;
                 break;
               } else {
-                setCurrentStatus(payload.message);
+                const msg = typeof payload.message === 'object' ? payload.message.message : payload.message;
+                setCurrentStatus(msg || '');
                 if (payload.model) setCurrentModel(payload.model);
               }
             } catch (e) {
