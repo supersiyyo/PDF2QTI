@@ -16,7 +16,7 @@ function App() {
       formData.append('file', file);
       formData.append('mode', mode);
 
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
       const response = await axios.post(`${baseURL}/api/process-pdf`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -32,7 +32,7 @@ function App() {
 
   const handleExportQti = async (finalData) => {
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
       const response = await axios.post(`${baseURL}/api/export-qti`, finalData, {
         responseType: 'blob'
       });
