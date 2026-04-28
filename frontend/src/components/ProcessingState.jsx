@@ -3,6 +3,8 @@ import { Cpu, Sparkles, Loader2 } from 'lucide-react';
 
 const ProcessingState = ({ status, model }) => {
   const [factIndex, setFactIndex] = React.useState(0);
+  const [elapsed, setElapsed] = React.useState(0);
+  const [discoveryIndex, setDiscoveryIndex] = React.useState(0);
   
   const facts = [
     "Our system uses a model cascade to ensure 99.9% uptime.",
@@ -15,27 +17,40 @@ const ProcessingState = ({ status, model }) => {
   ];
 
   React.useEffect(() => {
-    const interval = setInterval(() => {
+    const factInterval = setInterval(() => {
       setFactIndex((prev) => (prev + 1) % facts.length);
     }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const [discoveryIndex, setDiscoveryIndex] = React.useState(0);
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
+    const timeInterval = setInterval(() => {
+      setElapsed((prev) => prev + 1);
+    }, 1000);
+    const discoveryInterval = setInterval(() => {
       setDiscoveryIndex((prev) => Math.min(prev + 1, 5));
     }, 3000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(factInterval);
+      clearInterval(timeInterval);
+      clearInterval(discoveryInterval);
+    };
   }, []);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="processing-container">
       <div className="status-header">
-        <div className="model-badge">
-          <Cpu size={14} className="model-icon" />
-          <span>{model || 'System'}</span>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div className="model-badge">
+            <Cpu size={14} className="model-icon" />
+            <span>{model || 'System'}</span>
+          </div>
+          <div className="timer-badge">
+            {formatTime(elapsed)}
+          </div>
         </div>
         <div className="status-indicator">
           <Loader2 size={16} className="spinner-icon" />
@@ -47,9 +62,14 @@ const ProcessingState = ({ status, model }) => {
       </div>
 
       <div className="skeleton-quiz">
+        <div className="skeleton-quiz-header">
+          <div className="skeleton-line shimmer" style={{ width: '120px', height: '24px', marginBottom: '8px' }}></div>
+          <div className="skeleton-line shimmer" style={{ width: '100%', height: '40px' }}></div>
+        </div>
+        
         {[...Array(discoveryIndex + 1)].map((_, i) => (
           <div key={i} className="skeleton-question fade-in">
-            <div className="question-label">Question {i + 1} discovered...</div>
+            <div className="question-label">Question {i + 1}</div>
             <div className="skeleton-line shimmer title"></div>
             <div className="skeleton-options">
               {[1, 2, 3, 4].map((j) => (
@@ -71,7 +91,9 @@ const ProcessingState = ({ status, model }) => {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 24px;
+          margin-bottom: 32px;
+          border-bottom: 1px solid #f1f5f9;
+          padding-bottom: 16px;
         }
         .model-badge {
           display: flex;
@@ -85,6 +107,15 @@ const ProcessingState = ({ status, model }) => {
           font-weight: 600;
           border: 1px solid #dbeafe;
         }
+        .timer-badge {
+          font-family: monospace;
+          font-size: 0.875rem;
+          color: #64748b;
+          background: #f8fafc;
+          padding: 2px 8px;
+          border-radius: 4px;
+          border: 1px solid #e2e8f0;
+        }
         .model-icon {
           color: #3b82f6;
         }
@@ -94,10 +125,12 @@ const ProcessingState = ({ status, model }) => {
           gap: 12px;
           color: #64748b;
           font-size: 0.875rem;
+          text-align: right;
         }
         .status-stack {
           display: flex;
           flex-direction: column;
+          align-items: flex-end;
         }
         .spinner-icon {
           animation: spin 1s linear infinite;
@@ -121,51 +154,64 @@ const ProcessingState = ({ status, model }) => {
         .skeleton-quiz {
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 32px;
+        }
+        .skeleton-quiz-header {
+          margin-bottom: 16px;
+          padding-bottom: 24px;
+          border-bottom: 1px solid #f1f5f9;
         }
         .skeleton-question {
-          background: #f8fafc;
-          border: 1px solid #f1f5f9;
-          border-radius: 12px;
-          padding: 20px;
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          padding: 24px;
           position: relative;
-          overflow: hidden;
+          box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
         }
         .question-label {
+          display: inline-block;
+          background: var(--primary);
+          color: #fff;
           font-size: 0.65rem;
           font-weight: 700;
+          padding: 2px 8px;
+          border-radius: 4px;
           text-transform: uppercase;
-          color: #3b82f6;
-          margin-bottom: 12px;
-          letter-spacing: 0.05em;
+          margin-bottom: 16px;
         }
         .skeleton-line {
           height: 12px;
-          background: #e2e8f0;
-          border-radius: 6px;
+          background: #f1f5f9;
+          border-radius: 4px;
         }
         .skeleton-line.title {
-          width: 70%;
-          margin-bottom: 20px;
+          width: 85%;
+          height: 20px;
+          margin-bottom: 24px;
         }
         .skeleton-line.text {
-          width: 40%;
+          width: 50%;
+          height: 32px;
         }
         .skeleton-options {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 16px;
+          margin-left: 8px;
         }
         .skeleton-option {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 16px;
         }
         .skeleton-circle {
-          width: 16px;
-          height: 16px;
-          background: #e2e8f0;
+          width: 18px;
+          height: 18px;
+          background: #f1f5f9;
           border-radius: 50%;
+          border: 1px solid #e2e8f0;
+          flex-shrink: 0;
         }
 
         .shimmer {
