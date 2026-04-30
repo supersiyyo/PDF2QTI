@@ -5,15 +5,18 @@ Doc-to-Quiz is a full-stack application designed to automatically convert PDF do
 ## Features
 
 - **Document Processing**: Robust PDF text extraction utilizing `pdfplumber`.
-- **AI-Powered Digitization & Generation**: Integrates with Google's Gemini API to parse and format questions accurately.
-  - **Resilient AI Calls**: Automatic exponential-backoff retries and a **Gemini 2.5 Flash → Flash-Lite** model cascade ensure the service handles both `503` (overload) and `429` (quota) errors gracefully. If a backup model is used, the user is notified with a friendly green notice.
-  - **Non-blocking Execution**: AI API calls run via `asyncio.to_thread` so the SSE stream stays alive during long model calls.
-  - **Digitize Mode**: Extracts existing multiple-choice questions and identifies the correct answers.
-  - **Generate Mode**: Synthesizes study materials and generates new, relevant multiple-choice questions.
-- **Premium Processing UI**: A high-fidelity shimmer skeleton mirrors the exact layout of the final result during processing, complete with a live elapsed timer, model badge, and rotating educational facts. Results fade in smoothly on completion.
-- **QTI Export Engine**: Converts extracted questions into a downloadable `.zip` package formatted as a QTI quiz, fully compatible with learning management systems like Canvas.
-- **Decoupled Architecture**: Features a fast, asynchronous Python/FastAPI backend and a responsive React/Vite frontend.
-- **CI/CD Automation**: Fully automated deployment pipeline using GitHub Actions to deploy the backend to Railway and the frontend to SiteGround via secure FTP.
+- **AI-Powered Digitization & Generation**: Integrates with Google's Gemini API via the `google-genai` SDK.
+  - **Resilient Model Cascade**: Automatically cascades from **Gemini 2.5 Flash** to **Gemini 2.5 Flash-Lite** if high demand is detected.
+  - **Streaming Feedback (SSE)**: Provides real-time status updates (e.g., "Extracting text", "AI is working...") during long-running processes.
+  - **Non-blocking Execution**: Utilizes `asyncio.to_thread` and `asyncio.Queue` to keep the event loop responsive during AI calls.
+  - **Digitize Mode**: Extracts existing multiple-choice questions and solves for the correct answer if not explicitly provided.
+  - **Generate Mode**: Synthesizes study materials to invent new, high-quality multiple-choice questions.
+- **Premium User Experience**:
+  - **High-Fidelity Skeleton UI**: A shimmer skeleton mirrors the final editor layout during processing.
+  - **Live Timer & Educational Facts**: Keeps users engaged while the AI processes the document.
+  - **Interactive Preview Editor**: Review and edit AI-generated questions, change correct answers, and update the quiz title before exporting.
+- **QTI Export Engine**: Converts quiz data into a valid QTI 1.2 `.zip` package via `text2qti`, ensuring seamless import into Canvas LMS.
+- **CI/CD Automation**: Fully automated deployment pipeline using GitHub Actions (Backend to Railway, Frontend to SiteGround).
 
 ## Quick Start (Local Development)
 
@@ -26,23 +29,19 @@ Doc-to-Quiz is a full-stack application designed to automatically convert PDF do
 ### Installation
 
 1. **Clone the repository:**
-
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/supersiyyo/PDF2QTI.git
    cd PDF2QTI
    ```
 
 2. **Setup the Backend:**
-
    ```bash
    cd backend
    python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    ```
-
    Create a `.env` file in the `backend/` directory:
-
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
    ```
@@ -55,44 +54,34 @@ Doc-to-Quiz is a full-stack application designed to automatically convert PDF do
 
 ### Running the Application
 
-You can use the provided startup scripts from the project root:
+**Automatic Startup:**
+- Linux/macOS: `./start_app.sh`
+- Windows: `start_app.bat`
 
-**Linux (GNOME/xterm):**
-```bash
-./start_app.sh
-```
+**Manual Startup:**
+- **Backend**: `cd backend && uvicorn main:app --reload` (Port 8000)
+- **Frontend**: `cd frontend && npm run dev` (Port 5173)
 
-**Windows:**
-Double-click `start_app.bat` or run it from CMD:
-```cmd
-start_app.bat
-```
+## Testing
 
-Or run the services manually:
-
-**Backend:**
-
+### Backend Tests (Pytest)
+The backend includes unit tests for PDF extraction, API endpoints, and string sanitization.
 ```bash
 cd backend
 source .venv/bin/activate
-uvicorn main:app --reload
+PYTHONPATH=. pytest
 ```
 
-The API will be available at `http://127.0.0.1:8000`.
-
-**Frontend:**
-
+### Frontend Tests (Vitest)
+The frontend includes basic rendering and component tests.
 ```bash
 cd frontend
-npm run dev
+npm test
 ```
-
-The frontend will be available at `http://localhost:5173`.
 
 ## Documentation
 
-For more detailed information, please refer to the following documentation files:
-
+For more detailed information, refer to:
 - [Architecture Overview](docs/architecture.md)
 - [Deployment & Migration Guide](docs/deployment.md)
 
