@@ -57,3 +57,4 @@ Located in the `/frontend` directory, the frontend provides an intuitive user in
 - **Preview & Edit**: The `PreviewEditor` allows users to modify the AI-generated content before export. It includes a "Questions Badge" and numbered labels for each question.
 - **Resilience**: If a `503` is encountered, the UI provides a **Retry** button that re-submits the last file and mode.
 - **Smooth Transition**: When processing completes, the `PreviewEditor` fades in with a 450ms rise-and-fade animation.
+- **Open Source Transparency**: A fixed floating button in the bottom right corner provides a direct link to the GitHub repository, reinforcing the application's free and open-source nature.
