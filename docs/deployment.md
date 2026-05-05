@@ -1,6 +1,6 @@
 # Deployment & Migration Guide
 
-This guide details the steps required to migrate the Doc-to-Quiz application from a local development environment to production, utilizing **Railway** for the backend and **SiteGround** for the frontend.
+This guide details the steps required to migrate the CSUN x SOSE Educational Tools Platform from a local development environment to production, utilizing **Railway** for the backend APIs and **SiteGround** for the React frontend.
 
 ## 1. Backend Deployment (Railway)
 
@@ -63,9 +63,9 @@ We use a GitHub Actions workflow (`.github/workflows/deploy-frontend.yml`) to au
 2. `FTP_USERNAME`: The FTP account name.
 3. `FTP_PASSWORD`: The FTP account password.
 
-### 3. Handling SPA Routing
+### 3. Handling React Router (SPA Routing)
 
-To ensure page refreshes work correctly with React, an `.htaccess` file should be placed in the `public_html/` directory on SiteGround:
+Because the platform uses `react-router-dom` to manage multiple tool routes (e.g., `/instructor`, `/student`), an `.htaccess` file is critical. It must be placed in the `public_html/` directory on SiteGround to route all sub-paths back to `index.html`:
 
 ```apache
 <IfModule mod_rewrite.c>
