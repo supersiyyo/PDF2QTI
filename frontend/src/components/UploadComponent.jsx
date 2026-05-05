@@ -80,6 +80,7 @@ const UploadComponent = ({ onProcess }) => {
         className="btn-primary" 
         onClick={handleSubmit}
         disabled={!file}
+        style={{ width: '100%', marginTop: '1.5rem' }}
       >
         Process Document
       </button>

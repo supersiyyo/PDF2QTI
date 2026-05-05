@@ -1,22 +1,22 @@
-# Doc-to-Quiz (formerly PDF2QTI)
+# Educational Tools Platform (CSUN x SOSE)
 
-Doc-to-Quiz is a full-stack application designed to automatically convert PDF documents into Canvas-ready QTI (Question and Test Interoperability) files. It leverages advanced AI to either extract explicit multiple-choice questions from exams or intelligently generate new questions from study materials.
+This repository hosts a scalable, multi-tool educational platform designed for the CSUN community by the Society of Software Engineers (SOSE). It features a modern React frontend utilizing React Router to categorize and deliver both Instructor and Student tools.
+
+Currently featured is **PDF to Canvas QTI** (formerly PDF2QTI), a robust full-stack tool that automatically converts PDF documents into Canvas-ready QTI files using AI.
 
 ## Features
 
-- **Document Processing**: Robust PDF text extraction utilizing `pdfplumber`.
-- **AI-Powered Digitization & Generation**: Integrates with Google's Gemini API via the `google-genai` SDK.
-  - **Resilient Model Cascade**: Automatically cascades from **Gemini 2.5 Flash** to **Gemini 2.5 Flash-Lite** if high demand is detected.
-  - **Streaming Feedback (SSE)**: Provides real-time status updates (e.g., "Extracting text", "AI is working...") during long-running processes.
-  - **Non-blocking Execution**: Utilizes `asyncio.to_thread` and `asyncio.Queue` to keep the event loop responsive during AI calls.
-  - **Digitize Mode**: Extracts existing multiple-choice questions and solves for the correct answer if not explicitly provided.
-  - **Generate Mode**: Synthesizes study materials to invent new, high-quality multiple-choice questions.
+- **Scalable Platform Architecture**: Built with React Router to seamlessly host multiple Instructor and Student tools under a unified, premium UI.
+- **Educational Design System**: A clean, light aesthetic tailored for faculty accessibility, featuring CSUN Red and SOSE Purple branding accents.
+- **PDF to Canvas QTI Engine**: 
+  - Robust PDF text extraction utilizing `pdfplumber`.
+  - Integrates with Google's Gemini API via the `google-genai` SDK with a resilient Model Cascade (Flash -> Flash-Lite).
+  - Real-time Streaming Feedback (SSE) and Non-blocking Execution.
+  - Digitize Mode (extract existing questions) & Generate Mode (invent new questions).
+  - Converts quiz data into a valid QTI 1.2 `.zip` package via `text2qti`.
 - **Premium User Experience**:
-  - **High-Fidelity Skeleton UI**: A shimmer skeleton mirrors the final editor layout during processing.
-  - **Live Timer & Educational Facts**: Keeps users engaged while the AI processes the document.
-  - **Interactive Preview Editor**: Review and edit AI-generated questions, change correct answers, and update the quiz title before exporting.
-  - **Open Source Link**: Floating "View on GitHub" button for easy access to the source code.
-- **QTI Export Engine**: Converts quiz data into a valid QTI 1.2 `.zip` package via `text2qti`, ensuring seamless import into Canvas LMS.
+  - High-Fidelity Skeleton UI with a live timer and educational facts.
+  - Interactive Preview Editor to review and edit AI-generated questions before export.
 - **CI/CD Automation**: Fully automated deployment pipeline using GitHub Actions (Backend to Railway, Frontend to SiteGround).
 
 ## Quick Start (Local Development)

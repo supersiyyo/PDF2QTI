@@ -1,6 +1,6 @@
 # Architecture Overview
 
-The Doc-to-Quiz application employs a modern, decoupled architecture splitting responsibilities strictly between a backend API service and a frontend Single Page Application (SPA).
+The CSUN x SOSE Educational Tools Platform employs a modern, decoupled architecture splitting responsibilities strictly between a backend API service and a frontend React SPA (Single Page Application) that serves as a unified portal for multiple tools.
 
 ## System Components
 
@@ -38,23 +38,21 @@ Located in the `/backend` directory, the backend serves as the core processing e
 
 ### 2. Frontend (React & Vite)
 
-Located in the `/frontend` directory, the frontend provides an intuitive user interface for the service.
+Located in the `/frontend` directory, the frontend acts as a unified portal for all CSUN x SOSE tools.
 
 **Core Technologies:**
 
-- **React 18**: The foundational UI library.
+- **React 18 & React Router**: The foundational UI library and routing system for the multi-tool SPA.
 - **Vite**: Build tool and development server.
-- **Axios & Fetch**: `fetch` is used for handling the SSE stream from the processing endpoint, while `axios` is used for the standard JSON export request.
+- **Axios & Fetch**: `fetch` is used for handling the SSE stream from the processing endpoint, while `axios` is used for standard JSON export requests.
 - **Lucide React**: Icon library.
 
-**Key Workflows:**
+**Architecture & Workflows:**
 
-- **Processing State UI**: Uses a high-fidelity shimmer skeleton that mirrors the `PreviewEditor` layout. It features:
-    - A live **elapsed timer**.
-    - A **model badge** that updates in real-time as the backend cascades through models.
-    - Rotating **educational facts** to keep the user engaged.
-- **SSE Stream Handling**: Reads the stream using `ReadableStream` and `TextDecoder`. It handles partial chunks and parses `data: ` prefixed JSON payloads.
-- **Preview & Edit**: The `PreviewEditor` allows users to modify the AI-generated content before export. It includes a "Questions Badge" and numbered labels for each question.
-- **Resilience**: If a `503` is encountered, the UI provides a **Retry** button that re-submits the last file and mode.
-- **Smooth Transition**: When processing completes, the `PreviewEditor` fades in with a 450ms rise-and-fade animation.
-- **Open Source Transparency**: A fixed floating button in the bottom right corner provides a direct link to the GitHub repository, reinforcing the application's free and open-source nature.
+- **Platform Routing**: A centralized `App.jsx` uses `react-router-dom` to route traffic between the landing page (`/`), category pages (`/instructor`, `/student`), and specific tool pages (e.g., `/instructor/pdf2qti`).
+- **Educational Design System**: Uses a light, clean UI designed for faculty accessibility. Accents include CSUN Red (`#D00D2D`) and SOSE Purple (`#6B6DFF`).
+- **PDF2QTI Tool**: Now encapsulated in a specific route, it retains all original functionality:
+    - **Processing State UI**: Uses a high-fidelity shimmer skeleton mirroring the `PreviewEditor`, featuring a live elapsed timer and model badge.
+    - **SSE Stream Handling**: Reads the `ReadableStream` from the backend to provide real-time AI status updates.
+    - **Preview & Edit**: The `PreviewEditor` allows users to modify the AI-generated content before QTI export.
+- **Open Source Transparency**: Persistent links to the GitHub repository are integrated into the UI.
