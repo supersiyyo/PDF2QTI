@@ -15,6 +15,7 @@ Doc-to-Quiz is a full-stack application designed to automatically convert PDF do
   - **High-Fidelity Skeleton UI**: A shimmer skeleton mirrors the final editor layout during processing.
   - **Live Timer & Educational Facts**: Keeps users engaged while the AI processes the document.
   - **Interactive Preview Editor**: Review and edit AI-generated questions, change correct answers, and update the quiz title before exporting.
+  - **Open Source Link**: Floating "View on GitHub" button for easy access to the source code.
 - **QTI Export Engine**: Converts quiz data into a valid QTI 1.2 `.zip` package via `text2qti`, ensuring seamless import into Canvas LMS.
 - **CI/CD Automation**: Fully automated deployment pipeline using GitHub Actions (Backend to Railway, Frontend to SiteGround).
 
