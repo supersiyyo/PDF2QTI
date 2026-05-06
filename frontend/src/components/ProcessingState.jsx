@@ -1,15 +1,15 @@
 import React from 'react';
 import { Cpu, Loader2, Download, ArrowLeft } from 'lucide-react';
 
-const Shimmer = ({ style = {} }) => (
-  <div className="sk-shimmer" style={style} />
+const Shimmer = ({ style = {}, dark = false }) => (
+  <div className={dark ? "sk-shimmer-dark" : "sk-shimmer"} style={style} />
 );
 
-const ProcessingState = ({ status, model }) => {
+const ProcessingState = ({ status, model, customFacts, skeletonType = 'qti' }) => {
   const [factIndex, setFactIndex] = React.useState(0);
   const [elapsed, setElapsed] = React.useState(0);
 
-  const facts = [
+  const defaultFacts = [
     "Our system uses a model cascade to ensure 99.9% uptime.",
     "Gemini 2.5 Flash can process a 100-page PDF in seconds.",
     "We sanitize every string so your Canvas quiz never crashes.",
@@ -18,6 +18,8 @@ const ProcessingState = ({ status, model }) => {
     "We strip newlines and special chars to keep your quiz clean.",
     "If the primary model is busy, we switch to a backup automatically.",
   ];
+
+  const facts = customFacts || defaultFacts;
 
   React.useEffect(() => {
     const factInterval = setInterval(() => setFactIndex(p => (p + 1) % facts.length), 4000);
@@ -72,63 +74,103 @@ const ProcessingState = ({ status, model }) => {
 
       {/* ── Skeleton that mirrors the real PreviewEditor layout ── */}
       <div>
-        {/* Action bar row — mirrors "← Start Over" and "Download QTI .zip" */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#cbd5e1' }}>
-            <ArrowLeft size={16} />
-            <Shimmer style={{ width: '70px', height: '14px', borderRadius: '4px' }} />
-          </div>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            background: '#e2e8f0', padding: '8px 18px', borderRadius: '8px'
-          }}>
-            <Download size={15} style={{ color: '#94a3b8' }} />
-            <Shimmer style={{ width: '110px', height: '14px', borderRadius: '4px' }} />
-          </div>
-        </div>
+        {skeletonType === 'qti' ? (
+          <>
+            {/* Action bar row — mirrors "← Start Over" and "Download QTI .zip" */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#cbd5e1' }}>
+                <ArrowLeft size={16} />
+                <Shimmer style={{ width: '70px', height: '14px', borderRadius: '4px' }} />
+              </div>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: '#e2e8f0', padding: '8px 18px', borderRadius: '8px'
+              }}>
+                <Download size={15} style={{ color: '#94a3b8' }} />
+                <Shimmer style={{ width: '110px', height: '14px', borderRadius: '4px' }} />
+              </div>
+            </div>
 
-        {/* Main card — mirrors the surface-card with heading, quiz title, and questions */}
-        <div className="surface-card">
+            {/* Main card — mirrors the surface-card with heading, quiz title, and questions */}
+            <div className="surface-card">
+              {/* "Preview & Edit Quiz" heading row with question-count badge */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.5rem'
+              }}>
+                <Shimmer style={{ width: '170px', height: '22px', borderRadius: '4px' }} />
+                <Shimmer style={{ width: '85px', height: '22px', borderRadius: '12px' }} />
+              </div>
 
-          {/* "Preview & Edit Quiz" heading row with question-count badge */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.5rem'
-          }}>
-            <Shimmer style={{ width: '170px', height: '22px', borderRadius: '4px' }} />
-            <Shimmer style={{ width: '85px', height: '22px', borderRadius: '12px' }} />
-          </div>
+              {/* Quiz Title label + input */}
+              <div style={{ marginBottom: '3rem' }}>
+                <Shimmer style={{ width: '55px', height: '11px', borderRadius: '3px', marginBottom: '8px' }} />
+                <Shimmer style={{ width: '50%', height: '40px', borderRadius: '4px' }} />
+              </div>
 
-          {/* Quiz Title label + input */}
-          <div style={{ marginBottom: '3rem' }}>
-            <Shimmer style={{ width: '55px', height: '11px', borderRadius: '3px', marginBottom: '8px' }} />
-            <Shimmer style={{ width: '50%', height: '40px', borderRadius: '4px' }} />
-          </div>
+              {/* 3 question blocks */}
+              {[1, 2, 3].map(i => (
+                <div key={i} className="question-block" style={{ marginBottom: '2rem' }}>
+                  {/* Question text input (full-width) */}
+                  <Shimmer style={{ width: '100%', height: '36px', borderRadius: '4px', marginBottom: '16px' }} />
 
-          {/* 3 question blocks */}
-          {[1, 2, 3].map(i => (
-            <div key={i} className="question-block" style={{ marginBottom: '2rem' }}>
-              {/* Question text input (full-width) */}
-              <Shimmer style={{ width: '100%', height: '36px', borderRadius: '4px', marginBottom: '16px' }} />
-
-              {/* 4 plain choice rows — no correct highlighting in skeleton */}
-              {[1, 2, 3, 4].map(j => (
-                <div key={j} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <div style={{
-                    width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
-                    border: '2px solid #e2e8f0', background: 'transparent'
-                  }} />
-                  <Shimmer style={{ flex: 1, height: '34px', borderRadius: '4px' }} />
+                  {/* 4 plain choice rows — no correct highlighting in skeleton */}
+                  {[1, 2, 3, 4].map(j => (
+                    <div key={j} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                      <div style={{
+                        width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
+                        border: '2px solid #e2e8f0', background: 'transparent'
+                      }} />
+                      <Shimmer style={{ flex: 1, height: '34px', borderRadius: '4px' }} />
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
-          ))}
-        </div>
+          </>
+        ) : (
+          <div className="daily-byte-theme" style={{ maxWidth: 800, margin: '0 auto', background: 'transparent', minHeight: 'auto' }}>
+            <div style={{ marginBottom: '24px' }}>
+              <Shimmer dark style={{ width: '200px', height: '28px', borderRadius: '4px', marginBottom: '8px' }} />
+              <Shimmer dark style={{ width: '150px', height: '16px', borderRadius: '4px' }} />
+            </div>
+            
+            <Shimmer dark style={{ width: '100%', height: '3px', borderRadius: '2px', marginBottom: '24px' }} />
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} style={{
+                  background: "var(--bg-card)", border: "1px solid var(--border)",
+                  borderRadius: 12, padding: "16px 20px",
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                        <Shimmer dark style={{ width: '80px', height: '14px', borderRadius: '6px' }} />
+                        <Shimmer dark style={{ width: '60px', height: '14px', borderRadius: '6px' }} />
+                      </div>
+                      <Shimmer dark style={{ width: '250px', height: '18px', borderRadius: '4px', marginTop: '4px' }} />
+                      <Shimmer dark style={{ width: '150px', height: '14px', borderRadius: '4px', marginTop: '8px' }} />
+                    </div>
+                    <div>
+                      <Shimmer dark style={{ width: '40px', height: '16px', borderRadius: '4px' }} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{`
         .sk-shimmer {
           background: linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 50%, #e2e8f0 100%);
+          background-size: 200% 100%;
+          animation: sk-shimmer 1.5s infinite;
+        }
+        .sk-shimmer-dark {
+          background: linear-gradient(90deg, #1f2b3d 0%, #2d3f56 50%, #1f2b3d 100%);
           background-size: 200% 100%;
           animation: sk-shimmer 1.5s infinite;
         }

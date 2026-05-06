@@ -11,6 +11,15 @@ const TOOLS_DATA = [
     path: '/instructor/pdf2qti',
     icon: <FileText size={28} />,
     colorClass: 'csun-bg'
+  },
+  {
+    id: 'daily-byte',
+    title: 'Daily Byte AI',
+    description: 'Upload your course materials and dynamically generate personalized, interactive problem sets.',
+    category: 'student',
+    path: '/student/daily-byte',
+    icon: <BookOpen size={28} />,
+    colorClass: 'default-bg'
   }
 ];
 

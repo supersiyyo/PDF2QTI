@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud } from 'lucide-react';
 
-const UploadComponent = ({ onProcess }) => {
+const UploadComponent = ({ onProcess, hideModes = false }) => {
   const [file, setFile] = useState(null);
   const [mode, setMode] = useState('digitize');
   const fileInputRef = useRef(null);
@@ -51,30 +51,32 @@ const UploadComponent = ({ onProcess }) => {
         />
       </div>
 
-      <div className="mode-selector">
-        <label className="mode-option">
-          <input 
-            type="radio" 
-            name="mode" 
-            value="digitize" 
-            checked={mode === 'digitize'} 
-            onChange={(e) => setMode(e.target.value)} 
-            className="choice-radio"
-          />
-          Digitize Existing Quiz
-        </label>
-        <label className="mode-option">
-          <input 
-            type="radio" 
-            name="mode" 
-            value="generate" 
-            checked={mode === 'generate'} 
-            onChange={(e) => setMode(e.target.value)} 
-            className="choice-radio"
-          />
-          Generate Multiple Choice
-        </label>
-      </div>
+      {!hideModes && (
+        <div className="mode-selector">
+          <label className="mode-option">
+            <input 
+              type="radio" 
+              name="mode" 
+              value="digitize" 
+              checked={mode === 'digitize'} 
+              onChange={(e) => setMode(e.target.value)} 
+              className="choice-radio"
+            />
+            Digitize Existing Quiz
+          </label>
+          <label className="mode-option">
+            <input 
+              type="radio" 
+              name="mode" 
+              value="generate" 
+              checked={mode === 'generate'} 
+              onChange={(e) => setMode(e.target.value)} 
+              className="choice-radio"
+            />
+            Generate Multiple Choice
+          </label>
+        </div>
+      )}
 
       <button 
         className="btn-primary" 

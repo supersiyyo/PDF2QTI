@@ -28,3 +28,6 @@ frontend/.env.*
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Daily Byte
+daily-byte-main/

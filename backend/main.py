@@ -2,7 +2,7 @@ import os
 import time
 import tempfile
 import uuid
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -37,6 +37,27 @@ class Question(BaseModel):
 class QuizExtraction(BaseModel):
     questions: List[Question]
 
+class ProblemContent(BaseModel):
+    question: str = Field(description="The question text.")
+    options: List[str] = Field(description="A list of possible answers.")
+    correct_indices: List[int] = Field(description="A list of 0-based indices representing the correct option(s).")
+
+class DailyByteProblem(BaseModel):
+    byte: int = Field(description="Byte number, e.g., 1")
+    category: str = Field(description="Category of the problem")
+    course: str = Field(description="The course context")
+    title: str = Field(description="Title of the problem")
+    type: str = Field(description="Must be either 'multiple_choice' or 'select_all'")
+    xp: int = Field(description="XP reward (e.g. 15, 20, 25, 30)")
+    teaser: str = Field(description="A short teaser sentence")
+    mini_lecture: str = Field(description="A brief explanation or lecture context")
+    hint: str = Field(description="A helpful hint")
+    content: ProblemContent
+    explanation: str = Field(description="Explanation of the solution")
+
+class DailyByteExtraction(BaseModel):
+    problems: List[DailyByteProblem]
+
 def extract_text_from_pdf(pdf_path: str) -> str:
     text = ""
     with pdfplumber.open(pdf_path) as pdf:
@@ -60,7 +81,7 @@ def _is_overload_error(exc: Exception) -> bool:
     msg = str(exc).lower()
     return any(term in msg for term in ["503", "unavailable", "high demand", "429", "quota", "exhausted"])
 
-async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None) -> dict:
+async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None, response_schema: Any = QuizExtraction) -> dict:
     """
     Attempt to call the Gemini API with exponential backoff retries.
     Cascades through GEMINI_MODEL_CASCADE if all retries on a model fail.
@@ -71,7 +92,7 @@ async def call_gemini_with_retry(prompt: str, mode: str, log_callback=None) -> d
     client = genai.Client()
     config = {
         "response_mime_type": "application/json",
-        "response_schema": QuizExtraction,
+        "response_schema": response_schema,
         "temperature": 0.2 if mode == "digitize" else 0.7,
     }
 
@@ -233,6 +254,85 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
             yield f"data: {json.dumps({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'})}\n\n"
 
     return StreamingResponse(progress_generator(), media_type="text/event-stream")
+
+
+@app.post("/api/generate-daily-byte")
+async def generate_daily_byte(file: UploadFile = File(...)):
+    if "GEMINI_API_KEY" not in os.environ:
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not set in environment.")
+
+    async def progress_generator():
+        try:
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Initializing...', 'model': 'System'})}\n\n"
+            
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Reading document...', 'model': 'System'})}\n\n"
+            temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+            content = await file.read()
+            temp_pdf.write(content)
+            temp_pdf.close()
+
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Extracting text...', 'model': 'System'})}\n\n"
+            extracted_text = extract_text_from_pdf(temp_pdf.name)
+            os.unlink(temp_pdf.name)
+
+            if not extracted_text.strip():
+                yield f"data: {json.dumps({'status': 'error', 'message': 'Could not extract any text from the provided PDF.'})}\n\n"
+                return
+
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Analyzing content for Daily Byte...', 'model': 'System'})}\n\n"
+            prompt_instruction = (
+                "Act as an expert Computer Science educator. "
+                "Analyze the provided course material and generate a 'Daily Byte' learning module. "
+                "A Daily Byte consists of exactly 4 problems designed to mimic rigorous Canvas-style exams. "
+                "Generate a mix of 'multiple_choice' (single correct answer) and 'select_all' (Select All That Apply, with multiple correct answers). "
+                "For 'select_all', the correct_indices list should contain the 0-based indices of all correct options. "
+                "For 'multiple_choice', the correct_indices list should contain exactly one index. "
+                "Provide a short 'mini_lecture' summarizing the concept, a 'hint', and a detailed 'explanation' of the correct answer. "
+                "Use the provided text to create relevant and challenging problems based on the course material."
+            )
+            full_prompt = f"{prompt_instruction}\n\nDocument Text:\n{extracted_text}"
+
+            yield f"data: {json.dumps({'status': 'info', 'message': 'Generating interactive problems...', 'model': 'Gemini'})}\n\n"
+            
+            import asyncio
+            queue = asyncio.Queue()
+
+            async def log_callback(info):
+                await queue.put({'status': 'info', **info})
+
+            task = asyncio.create_task(call_gemini_with_retry(
+                full_prompt, 
+                mode="generate", 
+                log_callback=log_callback,
+                response_schema=DailyByteExtraction
+            ))
+
+            while not task.done():
+                try:
+                    msg = await asyncio.wait_for(queue.get(), timeout=0.1)
+                    yield f"data: {json.dumps(msg)}\n\n"
+                except asyncio.TimeoutError:
+                    continue
+
+            while not queue.empty():
+                msg = await queue.get()
+                yield f"data: {json.dumps(msg)}\n\n"
+
+            result = await task
+            data = result["data"]
+
+            if "warning" in result:
+                data["_warning"] = result["warning"]
+                yield f"data: {json.dumps({'status': 'warning', 'message': result['warning']})}\n\n"
+
+            yield f"data: {json.dumps({'status': 'success', 'message': 'Daily Byte generated successfully!', 'data': data})}\n\n"
+
+        except Exception as e:
+            print(f"[Error] Unexpected: {e}")
+            yield f"data: {json.dumps({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'})}\n\n"
+
+    return StreamingResponse(progress_generator(), media_type="text/event-stream")
+
 
 
 class ExtractQTIRequest(BaseModel):
