@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Download, AlertTriangle, Monitor, Sparkles } from 'lucide-react';
+import SlidePlayer from '../../components/SlidePlayer';
 
 const CanvasCritter = () => {
   return (
@@ -77,6 +78,8 @@ const CanvasCritter = () => {
           </p>
         </div>
       </motion.div>
+
+      <SlidePlayer baseUrl="https://csun.sose.dev/downloads/slides/canvas-critter" slideCount={18} />
     </div>
   );
 };
