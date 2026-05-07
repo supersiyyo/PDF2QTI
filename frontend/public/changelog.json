@@ -1,5 +1,21 @@
 [
   {
+    "id": "4",
+    "date": "2026-05-07",
+    "version": "v1.2.0",
+    "title": "Interactive How-To Guide for Canvas Critter 🎬",
+    "type": "feature",
+    "description": "Canvas Critter now has a built-in cinematic setup guide! An 18-step slideshow walks you through downloading and launching the app. It auto-plays like a video, smoothly preloads all images, and can expand into a full-screen theater mode. The guide system is also reusable — future tools can get their own walkthroughs with just a folder and a line of code."
+  },
+  {
+    "id": "5",
+    "date": "2026-05-07",
+    "version": "v1.1.1",
+    "title": "Deploy Pipeline Now Preserves Downloads 🛡️",
+    "type": "fix",
+    "description": "Fixed a critical deployment issue where every new release would accidentally wipe the Canvas Critter installer and guide images from the server. The deploy pipeline now surgically updates only the app files, leaving all manually managed assets safely untouched."
+  },
+  {
     "id": "1",
     "date": "2026-05-07",
     "version": "v1.1.0",
