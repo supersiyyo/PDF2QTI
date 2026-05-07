@@ -57,3 +57,6 @@ Thumbs.db
 # Large binaries / External builds
 mostrecentCancanbuild90percentdone/
 mostrecentCancanbuild90percentdone.zip
+
+/pics
+/frontend/public/slides/canvas-critter/
