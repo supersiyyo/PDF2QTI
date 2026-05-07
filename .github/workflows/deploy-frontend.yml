@@ -43,4 +43,3 @@ jobs:
         # SiteGround directories: /downloads/ (binaries + SlidePlayer guide images)
         exclude: |
           **/downloads/**
-          **/.htaccess
