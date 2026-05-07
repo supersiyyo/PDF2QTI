@@ -1,42 +1,50 @@
 [
   {
-    "id": "4",
+    "id": "1",
     "date": "2026-05-07",
     "version": "v1.2.0",
     "title": "Interactive How-To Guide for Canvas Critter 🎬",
     "type": "feature",
-    "description": "Canvas Critter now has a built-in cinematic setup guide! An 18-step slideshow walks you through downloading and launching the app. It auto-plays like a video, smoothly preloads all images, and can expand into a full-screen theater mode. The guide system is also reusable — future tools can get their own walkthroughs with just a folder and a line of code."
+    "description": "Canvas Critter now has a built-in cinematic setup guide! An 18-step slideshow walks you through downloading and launching the app. It auto-plays like a video, smoothly preloads all images, and can expand into a full-screen theater mode. The guide system is reusable — future tools can get their own walkthroughs with just a folder upload to the server."
   },
   {
-    "id": "5",
+    "id": "2",
     "date": "2026-05-07",
-    "version": "v1.1.1",
-    "title": "Deploy Pipeline Now Preserves Downloads 🛡️",
+    "version": "v1.1.2",
+    "title": "Deploy Pipeline Now Preserves Your Files 🛡️",
     "type": "fix",
     "description": "Fixed a critical deployment issue where every new release would accidentally wipe the Canvas Critter installer and guide images from the server. The deploy pipeline now surgically updates only the app files, leaving all manually managed assets safely untouched."
   },
   {
-    "id": "1",
+    "id": "3",
+    "date": "2026-05-07",
+    "version": "v1.1.1",
+    "title": "Canvas Critter Lands on the Platform 🐾",
+    "type": "feature",
+    "description": "Canvas Critter — a Windows desktop app built by CSUN students for COMP 380 — now has its own dedicated page on the platform. Students can download the beta build directly, with a polished landing page featuring beta warnings and a one-click download button."
+  },
+  {
+    "id": "4",
     "date": "2026-05-07",
     "version": "v1.1.0",
-    "title": "Agentic Updates Workflow",
+    "title": "Live Updates Feed & AI Changelog Generator ✨",
     "type": "feature",
-    "description": "Introduced a new AI-powered workflow to automatically generate and display platform updates."
+    "description": "The homepage now features a live 'What's New' feed showing the latest platform updates with smooth animations. Behind the scenes, an AI-powered workflow automatically reads our commit history and writes friendly update summaries — so the feed stays fresh without any manual writing."
   },
   {
-    "id": "2",
-    "date": "2026-05-06",
-    "version": "v1.0.5",
-    "title": "Bug Fixes & UI Enhancements",
+    "id": "5",
+    "date": "2026-05-07",
+    "version": "v1.0.6",
+    "title": "QTI Export Reliability Fix 🔧",
     "type": "fix",
-    "description": "Resolved a critical issue with the QTI export endpoint and polished the homepage featured cards."
+    "description": "Resolved a 500 Internal Server Error that could occur during QTI file export. The backend now uses a more reliable method to run the conversion tool, preventing crashes caused by environment path issues."
   },
   {
-    "id": "3",
-    "date": "2026-05-04",
-    "version": "v1.0.4",
-    "title": "Dynamic Model Selection",
-    "type": "feature",
-    "description": "Added dynamic Gemini model selection for improved performance and rate limit management."
+    "id": "6",
+    "date": "2026-05-07",
+    "version": "v1.0.5",
+    "title": "One-Click Setup Scripts & Test Suite Fixes 🚀",
+    "type": "fix",
+    "description": "Added automatic install scripts for both Windows and Mac/Linux — just run a single file to get the entire platform ready locally. Also fixed the frontend test suite to align with the new platform architecture, keeping CI green."
   }
 ]
