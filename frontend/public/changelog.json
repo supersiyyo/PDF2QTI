@@ -1,5 +1,37 @@
 [
   {
+    "id": "7",
+    "date": "2026-05-07",
+    "version": "v1.2.5",
+    "title": "Cinematic Guide Engine",
+    "type": "feature",
+    "description": "Implemented a high-performance SlidePlayer component featuring image preloading, theater mode, and dynamic onboarding pipelines."
+  },
+  {
+    "id": "6",
+    "date": "2026-05-07",
+    "version": "v1.2.0",
+    "title": "Canvas Critter Integration",
+    "type": "feature",
+    "description": "Successfully migrated Canvas Critter to the platform suite with COMP 380 rebranding and polished glassmorphism UI."
+  },
+  {
+    "id": "5",
+    "date": "2026-05-07",
+    "version": "v1.1.5",
+    "title": "Automated Updates Module",
+    "type": "feature",
+    "description": "Launched a new homepage 'Updates' feed powered by an agentic workflow to keep instructors informed of platform changes."
+  },
+  {
+    "id": "4",
+    "date": "2026-05-07",
+    "version": "v1.1.1",
+    "title": "Infrastructure & QTI Fixes",
+    "type": "fix",
+    "description": "Hardened deployment pipelines to safeguard hosted assets and resolved critical backend execution errors in the QTI export engine."
+  },
+  {
     "id": "1",
     "date": "2026-05-07",
     "version": "v1.1.0",
