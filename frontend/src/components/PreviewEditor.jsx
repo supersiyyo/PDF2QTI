@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Download, ArrowLeft } from 'lucide-react';
+import { Download, ArrowLeft, Zap } from 'lucide-react';
 
-const PreviewEditor = ({ initialData, onExport, onReset }) => {
+const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
   // initialData structural assumption: { quiz_title: "", questions: [...] }
   const [data, setData] = useState(initialData);
 
@@ -38,13 +38,30 @@ const PreviewEditor = ({ initialData, onExport, onReset }) => {
         >
           <ArrowLeft size={18} /> Start Over
         </button>
-        <button 
-          className="btn-primary" 
-          style={{ width: 'auto', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }} 
-          onClick={() => onExport(data)}
-        >
-          <Download size={18} /> Download QTI .zip
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            className="btn-primary" 
+            style={{ 
+              width: 'auto', 
+              margin: 0, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              backgroundColor: '#6b6dff', // SOSE Purple
+              borderColor: '#6b6dff'
+            }} 
+            onClick={() => onGenerateExam(data)}
+          >
+            <Zap size={18} /> Generate Emergency Exam
+          </button>
+          <button 
+            className="btn-primary" 
+            style={{ width: 'auto', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }} 
+            onClick={() => onExport(data)}
+          >
+            <Download size={18} /> Download QTI .zip
+          </button>
+        </div>
       </div>
 
       <div className="surface-card">
