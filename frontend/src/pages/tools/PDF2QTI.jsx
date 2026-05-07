@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Copy, ExternalLink, Check, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import UploadComponent from '../../components/UploadComponent';
 import PreviewEditor from '../../components/PreviewEditor';
 import ProcessingState from '../../components/ProcessingState';
