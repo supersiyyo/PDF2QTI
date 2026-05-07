@@ -32,6 +32,14 @@ const UpdatesModule = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    // Split the YYYY-MM-DD string and create a local date object
+    // to prevent timezone shifts (JavaScript treats ISO strings as UTC by default)
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString();
+  };
+
   const displayUpdates = updates.slice(0, 3);
 
   const getIcon = (type) => {
@@ -71,7 +79,7 @@ const UpdatesModule = () => {
                     {update.version && <span className="update-version">{update.version}</span>}
                   </div>
                   <p className="update-description">{update.description}</p>
-                  <span className="update-date">{new Date(update.date).toLocaleDateString()}</span>
+                  <span className="update-date">{formatDate(update.date)}</span>
                 </motion.div>
               ))}
             </div>
@@ -114,7 +122,7 @@ const UpdatesModule = () => {
                       </div>
                       <div className="history-meta">
                         {update.version && <span className="update-version">{update.version}</span>}
-                        <span className="update-date">{new Date(update.date).toLocaleDateString()}</span>
+                        <span className="update-date">{formatDate(update.date)}</span>
                       </div>
                     </div>
                     <p>{update.description}</p>

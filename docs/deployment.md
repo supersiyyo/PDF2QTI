@@ -63,15 +63,38 @@ We use a GitHub Actions workflow (`.github/workflows/deploy-frontend.yml`) to au
 2. `FTP_USERNAME`: The FTP account name.
 3. `FTP_PASSWORD`: The FTP account password.
 
-### 3. Handling Large Binaries (Canvas Critter)
+### 3. Handling Large Binaries & Guide Images (Canvas Critter)
 
-The repository `.gitignore` ignores large standalone executables like the 74.4MB `mostrecentCancanbuild90percentdone.zip` file for the Canvas Critter tool. This prevents repository bloat.
-To deploy this binary:
-1. Ensure the Windows build is compressed as `mostrecentCancanbuild90percentdone.zip`.
+The repository `.gitignore` ignores large standalone executables and guide screenshots to prevent repository bloat. Both the binary and the how-to-use images are served directly from SiteGround.
+
+**Deploying the application binary:**
+1. Compress the Windows build as `mostrecentCancanbuild90percentdone.zip`.
 2. Access the SiteGround File Manager or connect via FTP.
-3. Create a `downloads/` folder inside `public_html/`.
-4. Upload the zip file into the `downloads/` directory. 
-5. The React frontend will automatically resolve the link `https://csun.sose.dev/downloads/mostrecentCancanbuild90percentdone.zip`.
+3. Upload the zip into `public_html/downloads/`.
+4. The React frontend resolves the link `https://csun.sose.dev/downloads/mostrecentCancanbuild90percentdone.zip`.
+
+**Deploying guide images (SlidePlayer Pipeline):**
+
+The `SlidePlayer` component fetches images from a structured SiteGround directory — no code changes are required to update or add new guides.
+
+Convention: `public_html/downloads/slides/<tool-name>/<N>.png` (1-indexed)
+
+Example for Canvas Critter (18 slides):
+```
+public_html/
+  downloads/
+    slides/
+      canvas-critter/
+        1.png  →  https://csun.sose.dev/downloads/slides/canvas-critter/1.png
+        2.png
+        ...
+        18.png
+```
+
+To add a guide for a **new tool**, create a new folder (e.g., `slides/pdf-analyzer/`) and update the component with:
+```jsx
+<SlidePlayer baseUrl="https://csun.sose.dev/downloads/slides/pdf-analyzer" slideCount={10} />
+```
 
 ### 4. Handling React Router (SPA Routing)
 

@@ -39,5 +39,8 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./frontend/dist/
         server-dir: ./
-        # Always re-upload all files to avoid stale hash mismatch
-        dangerous-clean-slate: true
+        # dangerous-clean-slate is intentionally OFF to preserve manually-managed
+        # SiteGround directories: /downloads/ (binaries + SlidePlayer guide images)
+        exclude: |
+          **/downloads/**
+          **/.htaccess
