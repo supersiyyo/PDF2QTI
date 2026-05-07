@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, FileText, ArrowRight } from 'lucide-react';
+import UpdatesModule from '../components/UpdatesModule';
 
 const Home = () => {
   return (
@@ -24,42 +25,48 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="featured-tools-section">
-        <div className="section-header">
-          <h2>Featured Tools</h2>
-          <div className="header-line"></div>
-        </div>
-        
-        <div className="tools-grid">
-          <Link to="/instructor/pdf2qti" className="tool-card featured">
-            <div className="tool-card-icon csun-bg">
-              <FileText size={28} />
-            </div>
-            <div className="tool-card-content">
-              <h3>PDF to Canvas QTI</h3>
-              <p>Transform static PDF documents and quizzes into importable Canvas assessments using AI.</p>
-            </div>
-            <div className="tool-card-footer">
-              <span className="tool-badge instructor">Instructor Tool</span>
-              <ArrowRight className="arrow-icon" size={20} />
-            </div>
-          </Link>
+      <div className="home-content-wrapper">
+        <section className="home-main">
+          <div className="section-header">
+            <h2>Featured Tools</h2>
+            <div className="header-line"></div>
+          </div>
+          
+          <div className="tools-grid">
+            <Link to="/instructor/pdf2qti" className="tool-card featured">
+              <div className="tool-card-icon csun-bg">
+                <FileText size={28} />
+              </div>
+              <div className="tool-card-content">
+                <h3>PDF to Canvas QTI</h3>
+                <p>Transform static PDF documents and quizzes into importable Canvas assessments using AI.</p>
+              </div>
+              <div className="tool-card-footer">
+                <span className="tool-badge instructor">Instructor Tool</span>
+                <ArrowRight className="arrow-icon" size={20} />
+              </div>
+            </Link>
 
-          {/* Placeholder for future tools */}
-          <div className="tool-card coming-soon">
-            <div className="tool-card-icon default-bg">
-              <GraduationCap size={28} />
-            </div>
-            <div className="tool-card-content">
-              <h3>More Tools Coming Soon</h3>
-              <p>SOSE is actively developing more utilities to help students succeed.</p>
-            </div>
-            <div className="tool-card-footer">
-              <span className="tool-badge student">Student Tool</span>
+            {/* Placeholder for future tools */}
+            <div className="tool-card coming-soon">
+              <div className="tool-card-icon default-bg">
+                <GraduationCap size={28} />
+              </div>
+              <div className="tool-card-content">
+                <h3>More Tools Coming Soon</h3>
+                <p>SOSE is actively developing more utilities to help students succeed.</p>
+              </div>
+              <div className="tool-card-footer">
+                <span className="tool-badge student">Student Tool</span>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+        
+        <aside className="home-sidebar">
+          <UpdatesModule />
+        </aside>
+      </div>
     </div>
   );
 };

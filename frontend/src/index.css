@@ -416,6 +416,37 @@ body {
   color: var(--secondary);
 }
 
+/* Home Content Wrapper for Updates Module */
+.home-content-wrapper {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.home-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.home-sidebar {
+  width: 350px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+}
+
+@media (max-width: 1024px) {
+  .home-content-wrapper {
+    flex-direction: column;
+  }
+  
+  .home-sidebar {
+    width: 100%;
+    position: relative;
+    top: 0;
+  }
+}
+
 /* Grid & Cards */
 .section-header {
   margin-bottom: 2rem;
