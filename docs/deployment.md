@@ -65,7 +65,7 @@ We use a GitHub Actions workflow (`.github/workflows/deploy-frontend.yml`) to au
 
 ### 3. Handling Large Binaries (Canvas Critter)
 
-The repository `.gitignore` ignores large standalone executables like the 100MB `mostrecentCancanbuild90percentdone.zip` file for the Canvas Critter tool. This prevents repository bloat.
+The repository `.gitignore` ignores large standalone executables like the 74.4MB `mostrecentCancanbuild90percentdone.zip` file for the Canvas Critter tool. This prevents repository bloat.
 To deploy this binary:
 1. Ensure the Windows build is compressed as `mostrecentCancanbuild90percentdone.zip`.
 2. Access the SiteGround File Manager or connect via FTP.
