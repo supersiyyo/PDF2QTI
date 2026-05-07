@@ -3,17 +3,19 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Sparkles, Wrench, Hammer, X, ChevronRight } from 'lucide-react';
 import './UpdatesModule.css';
 
+// Cache updates so we don't refetch when navigating back to Home
+let cachedUpdates = null;
+
 const UpdatesModule = () => {
-  const [updates, setUpdates] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [updates, setUpdates] = useState(cachedUpdates || []);
+  const [loading, setLoading] = useState(!cachedUpdates);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
-  // Handle Hydration safely
   useEffect(() => {
-    setHasMounted(true);
-    fetchUpdates();
+    if (!cachedUpdates) {
+      fetchUpdates();
+    }
   }, []);
 
   const fetchUpdates = async () => {
@@ -21,6 +23,7 @@ const UpdatesModule = () => {
       const response = await fetch('/changelog.json');
       if (!response.ok) throw new Error('Failed to fetch changelog');
       const data = await response.json();
+      cachedUpdates = data;
       setUpdates(data);
     } catch (error) {
       console.error('Error loading updates:', error);
@@ -29,23 +32,7 @@ const UpdatesModule = () => {
     }
   };
 
-  if (!hasMounted) return null;
-
   const displayUpdates = updates.slice(0, 3);
-
-  // Animation Variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 10 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
-  };
 
   const getIcon = (type) => {
     if (type === 'feature') return <Sparkles size={16} className="icon-feature" />;
@@ -61,49 +48,34 @@ const UpdatesModule = () => {
         </div>
 
         <div className="updates-list-container">
-          <AnimatePresence mode="wait">
-            {loading ? (
-              <motion.div
-                key="skeleton"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="updates-skeleton"
-              >
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="skeleton-item" />
-                ))}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="content"
-                variants={containerVariants}
-                initial="hidden"
-                animate="show"
-                className="updates-list"
-              >
-                {displayUpdates.map((update) => (
-                  <motion.div
-                    key={update.id}
-                    variants={itemVariants}
-                    whileHover={{ scale: shouldReduceMotion ? 1 : 1.02 }}
-                    whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
-                    className="update-card"
-                  >
-                    <div className="update-card-header">
-                      <div className="update-title-group">
-                        {getIcon(update.type)}
-                        <span className="update-title">{update.title}</span>
-                      </div>
-                      {update.version && <span className="update-version">{update.version}</span>}
+          {loading ? (
+            <div className="updates-skeleton">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="skeleton-item" />
+              ))}
+            </div>
+          ) : (
+            <div className="updates-list">
+              {displayUpdates.map((update) => (
+                <motion.div
+                  key={update.id}
+                  whileHover={{ scale: shouldReduceMotion ? 1 : 1.02 }}
+                  whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
+                  className="update-card"
+                >
+                  <div className="update-card-header">
+                    <div className="update-title-group">
+                      {getIcon(update.type)}
+                      <span className="update-title">{update.title}</span>
                     </div>
-                    <p className="update-description">{update.description}</p>
-                    <span className="update-date">{new Date(update.date).toLocaleDateString()}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    {update.version && <span className="update-version">{update.version}</span>}
+                  </div>
+                  <p className="update-description">{update.description}</p>
+                  <span className="update-date">{new Date(update.date).toLocaleDateString()}</span>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
 
         <button 
