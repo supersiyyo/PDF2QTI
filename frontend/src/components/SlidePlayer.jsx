@@ -130,6 +130,15 @@ export default function SlidePlayer({ baseUrl, slideCount, fileExtension = '.png
   const audioRef = useRef(null);
   const audioStarted = useRef(false);
 
+  /* ── Preload Strategy ── */
+  useEffect(() => {
+    // Prime the browser cache by loading all images in the background
+    for (let i = 1; i <= slideCount; i++) {
+      const img = new Image();
+      img.src = `${baseUrl}/${i}${fileExtension}`;
+    }
+  }, [baseUrl, slideCount, fileExtension]);
+
   /* ── Auto-advance timer ── */
   useEffect(() => {
     if (!isPlaying) return;
