@@ -1,10 +1,10 @@
-/* Glassmorphism & Modern Aesthetic */
+/* Glassmorphism & Modern Aesthetic (Light Theme) */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   border-radius: 12px;
 }
 
@@ -14,7 +14,7 @@
   flex-direction: column;
   padding: 1.5rem;
   width: 100%;
-  color: var(--text-color, #e0e0e0);
+  color: var(--text-primary, #0f172a);
 }
 
 .updates-header {
@@ -27,12 +27,13 @@
 .updates-header h3 {
   margin: 0;
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
   letter-spacing: -0.5px;
 }
 
 .updates-badge {
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: linear-gradient(135deg, var(--primary, #D00D2D), var(--secondary, #6B6DFF));
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
@@ -50,7 +51,7 @@
 
 .skeleton-item {
   height: 80px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
   animation: pulse 1.5s infinite;
 }
@@ -69,11 +70,18 @@
 }
 
 .update-card {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
   padding: 1rem;
   border-radius: 8px;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: all 0.2s ease;
+}
+
+.update-card:hover {
+  border-color: var(--secondary, #6B6DFF);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .update-card-header {
@@ -93,28 +101,29 @@
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
-  color: #fff;
+  color: var(--text-primary, #0f172a);
 }
 
 .update-version {
   font-family: 'Fira Code', 'Courier New', monospace;
   font-size: 0.75rem;
-  color: #a855f7;
-  background: rgba(168, 85, 247, 0.1);
+  color: var(--secondary, #6B6DFF);
+  background: rgba(107, 109, 255, 0.1);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
 }
 
 .update-description {
   font-size: 0.85rem;
-  color: #a0a0a0;
+  color: var(--text-secondary, #475569);
   margin: 0 0 0.75rem 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .update-date {
   font-size: 0.7rem;
-  color: #666;
+  color: #64748b;
+  font-weight: 500;
 }
 
 /* Icons */
@@ -134,18 +143,19 @@
   width: 100%;
   margin-top: 1rem;
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e0e0e0;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  color: var(--text-secondary, #475569);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .view-all-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #f1f5f9;
+  color: var(--text-primary, #0f172a);
+  border-color: #cbd5e1;
 }
 
 /* Elegant Modal */
@@ -155,7 +165,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
@@ -170,6 +180,9 @@
   max-height: 80vh;
   display: flex;
   flex-direction: column;
+  background: var(--surface, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .modal-header {
@@ -177,18 +190,19 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border, #e2e8f0);
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 1.5rem;
+  color: var(--text-primary, #0f172a);
 }
 
 .close-btn {
   background: transparent;
   border: none;
-  color: #a0a0a0;
+  color: var(--text-secondary, #475569);
   cursor: pointer;
   padding: 0.5rem;
   display: flex;
@@ -197,8 +211,8 @@
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #f1f5f9;
+  color: var(--text-primary, #0f172a);
 }
 
 .modal-body {
@@ -210,7 +224,7 @@
 }
 
 .history-item {
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  border-left: 2px solid var(--border, #e2e8f0);
   padding-left: 1rem;
   position: relative;
 }
@@ -222,8 +236,9 @@
   top: 6px;
   width: 10px;
   height: 10px;
-  background: #a855f7;
+  background: var(--secondary, #6B6DFF);
   border-radius: 50%;
+  border: 2px solid var(--surface, #ffffff);
 }
 
 .history-header {
@@ -241,7 +256,8 @@
 
 .history-title-group h4 {
   margin: 0;
-  color: #fff;
+  color: var(--text-primary, #0f172a);
+  font-size: 1rem;
 }
 
 .history-meta {
@@ -253,7 +269,7 @@
 
 .history-item p {
   margin: 0;
-  color: #a0a0a0;
+  color: var(--text-secondary, #475569);
   font-size: 0.9rem;
   line-height: 1.5;
 }
