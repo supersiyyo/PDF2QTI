@@ -28,3 +28,6 @@ frontend/.env.*
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Large binaries / External builds
+mostrecentCancanbuild90percentdone/
