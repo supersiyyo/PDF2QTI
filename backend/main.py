@@ -1,9 +1,11 @@
 import os
+import sys
 import time
 import tempfile
+import shutil
 import uuid
 from typing import List, Optional
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -11,8 +13,6 @@ from dotenv import load_dotenv
 import pdfplumber
 from google import genai
 from google.genai import errors as genai_errors
-import text2qti
-from text2qti.qti import QTI
 
 # Load environment variables
 load_dotenv()
@@ -240,7 +240,7 @@ class ExtractQTIRequest(BaseModel):
     questions: List[Question]
 
 @app.post("/api/export-qti")
-async def export_qti(data: ExtractQTIRequest):
+async def export_qti(data: ExtractQTIRequest, background_tasks: BackgroundTasks):
     try:
         # Construct markdown string for text2qti
         # Sanitize quiz title to remove newlines
@@ -270,29 +270,32 @@ async def export_qti(data: ExtractQTIRequest):
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(markdown_content)
         
-        # Generate QTI using text2qti CLI instead of internal python API which can be unstable
+        # Generate QTI using text2qti as a Python module for PATH safety across all environments
         import subprocess
         try:
             subprocess.run(
-                ["text2qti", md_path], 
-                cwd=base_dir, 
-                check=True, 
-                capture_output=True, 
+                [sys.executable, "-m", "text2qti", md_path],
+                cwd=base_dir,
+                check=True,
+                capture_output=True,
                 text=True
             )
         except subprocess.CalledProcessError as sub_e:
             raise Exception(f"text2qti compilation failed: {sub_e.stderr}")
+        except FileNotFoundError:
+            raise Exception("text2qti module not found. Ensure it is installed in the server environment.")
 
         safe_filename = "".join(c for c in data.quiz_title if c.isalnum() or c in (' ', '-', '_')).rstrip()
         safe_filename = safe_filename.replace(' ', '_') or 'quiz'
-        
+
+        # Schedule temp directory cleanup AFTER the response has been fully sent
+        background_tasks.add_task(shutil.rmtree, base_dir, True)
+
         # Return file
         return FileResponse(
-            path=qti_path, 
-            media_type="application/zip", 
+            path=qti_path,
+            media_type="application/zip",
             filename=f"{safe_filename}.zip",
-            # FastAPI can't delete immediately if streaming, 
-            # A background task is better but this works for development
         )
 
     except Exception as e:
