@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, GraduationCap, FileText, ArrowRight } from 'lucide-react';
+import { BookOpen, GraduationCap, FileText, ArrowRight, Monitor } from 'lucide-react';
 
 const TOOLS_DATA = [
   {
@@ -11,6 +11,16 @@ const TOOLS_DATA = [
     path: '/instructor/pdf2qti',
     icon: <FileText size={28} />,
     colorClass: 'csun-bg'
+  },
+  {
+    id: 'canvas-critter',
+    title: 'Canvas Critter',
+    description: 'A desktop application developed by CSUN students for a COMP 380 project. Currently in Beta.',
+    category: 'student',
+    path: '/student/canvas-critter',
+    icon: <Monitor size={28} />,
+    colorClass: 'default-bg',
+    isBeta: true
   }
 ];
 
@@ -42,7 +52,10 @@ const ToolsCategory = ({ category }) => {
                 {tool.icon}
               </div>
               <div className="tool-card-content">
-                <h3>{tool.title}</h3>
+                <h3>
+                  {tool.title}
+                  {tool.isBeta && <span className="beta-badge">Beta</span>}
+                </h3>
                 <p>{tool.description}</p>
               </div>
               <div className="tool-card-footer">

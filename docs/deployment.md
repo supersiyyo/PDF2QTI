@@ -98,7 +98,11 @@ To add a guide for a **new tool**, create a new folder (e.g., `slides/pdf-analyz
 
 ### 4. Handling React Router (SPA Routing)
 
-Because the platform uses `react-router-dom` to manage multiple tool routes (e.g., `/instructor`, `/student`), an `.htaccess` file is critical. It must be placed in the `public_html/` directory on SiteGround to route all sub-paths back to `index.html`:
+Because the platform uses `react-router-dom` to manage multiple tool routes (e.g., `/instructor`, `/student`), an `.htaccess` file is critical to route all sub-paths back to `index.html`. 
+
+This file is located at `frontend/public/.htaccess` and is automatically included in the build output (`dist/`) and deployed to SiteGround via the GitHub Actions workflow. No manual intervention is required on the server.
+
+The configuration content is:
 
 ```apache
 <IfModule mod_rewrite.c>

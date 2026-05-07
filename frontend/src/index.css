@@ -5,6 +5,7 @@
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --primary: #D00D2D; /* CSUN Red */
+  --primary-rgb: 208, 13, 45;
   --primary-hover: #b00b25;
   --secondary: #6B6DFF; /* SOSE Purple */
   --secondary-hover: #5A5CE6;
@@ -583,3 +584,17 @@ body {
   color: var(--border);
   margin-bottom: 1rem;
 }
+
+.beta-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
