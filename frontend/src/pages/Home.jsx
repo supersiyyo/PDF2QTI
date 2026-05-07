@@ -74,7 +74,7 @@ const Home = () => {
                   <Monitor size={28} />
                 </div>
                 <div className="tool-card-content">
-                  <h3>Canvas Critter <span className="beta-badge" style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle' }}>Beta</span></h3>
+                  <h3>Canvas Critter <span className="beta-badge">Beta</span></h3>
                   <p>A desktop application currently being developed by CSUN students for a COMP 380 project.</p>
                 </div>
                 <div className="tool-card-footer">
