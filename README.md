@@ -17,6 +17,8 @@ Currently featured is **PDF to Canvas QTI** (formerly PDF2QTI), a robust full-st
 - **Premium User Experience**:
   - High-Fidelity Skeleton UI with a live timer and educational facts.
   - Interactive Preview Editor to review and edit AI-generated questions before export.
+  - Interactive **Updates Module** on the homepage featuring staggered Framer Motion micro-interactions and a global changelog cache.
+- **Canvas Critter**: A standalone desktop application currently being developed by CSUN students for a COMP 380 project. Hosted externally via SiteGround with a dedicated landing page for Beta downloads.
 - **CI/CD Automation**: Fully automated deployment pipeline using GitHub Actions (Backend to Railway, Frontend to SiteGround).
 
 ## Quick Start (Local Development)

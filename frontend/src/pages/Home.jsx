@@ -1,11 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, GraduationCap, FileText, ArrowRight } from 'lucide-react';
+import { BookOpen, GraduationCap, FileText, ArrowRight, Monitor } from 'lucide-react';
+import { motion } from 'framer-motion';
+import UpdatesModule from '../components/UpdatesModule';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
 
 const Home = () => {
   return (
-    <div className="home-container">
-      <section className="hero-section">
+    <motion.div 
+      className="home-container"
+      initial="hidden"
+      animate="show"
+      variants={containerVariants}
+    >
+      <motion.section variants={itemVariants} className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">Educational Tools Platform</h1>
           <p className="hero-subtitle">
@@ -22,45 +42,71 @@ const Home = () => {
             </Link>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="featured-tools-section">
-        <div className="section-header">
-          <h2>Featured Tools</h2>
-          <div className="header-line"></div>
-        </div>
-        
-        <div className="tools-grid">
-          <Link to="/instructor/pdf2qti" className="tool-card featured">
-            <div className="tool-card-icon csun-bg">
-              <FileText size={28} />
-            </div>
-            <div className="tool-card-content">
-              <h3>PDF to Canvas QTI</h3>
-              <p>Transform static PDF documents and quizzes into importable Canvas assessments using AI.</p>
-            </div>
-            <div className="tool-card-footer">
-              <span className="tool-badge instructor">Instructor Tool</span>
-              <ArrowRight className="arrow-icon" size={20} />
-            </div>
-          </Link>
-
-          {/* Placeholder for future tools */}
-          <div className="tool-card coming-soon">
-            <div className="tool-card-icon default-bg">
-              <GraduationCap size={28} />
-            </div>
-            <div className="tool-card-content">
-              <h3>More Tools Coming Soon</h3>
-              <p>SOSE is actively developing more utilities to help students succeed.</p>
-            </div>
-            <div className="tool-card-footer">
-              <span className="tool-badge student">Student Tool</span>
-            </div>
+      <div className="home-content-wrapper">
+        <motion.section variants={itemVariants} className="home-main">
+          <div className="section-header">
+            <h2>Featured Tools</h2>
+            <div className="header-line"></div>
           </div>
-        </div>
-      </section>
-    </div>
+          
+          <motion.div className="tools-grid" variants={containerVariants}>
+            <motion.div variants={itemVariants} whileHover={{ y: -4 }}>
+              <Link to="/instructor/pdf2qti" className="tool-card featured">
+                <div className="tool-card-icon csun-bg">
+                  <FileText size={28} />
+                </div>
+                <div className="tool-card-content">
+                  <h3>PDF to Canvas QTI</h3>
+                  <p>Transform static PDF documents and quizzes into importable Canvas assessments using AI.</p>
+                </div>
+                <div className="tool-card-footer">
+                  <span className="tool-badge instructor">Instructor Tool</span>
+                  <ArrowRight className="arrow-icon" size={20} />
+                </div>
+              </Link>
+            </motion.div>
+
+            <motion.div variants={itemVariants} whileHover={{ y: -4 }}>
+              <Link to="/student/canvas-critter" className="tool-card featured">
+                <div className="tool-card-icon default-bg">
+                  <Monitor size={28} />
+                </div>
+                <div className="tool-card-content">
+                  <h3>Canvas Critter <span className="beta-badge" style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle' }}>Beta</span></h3>
+                  <p>A desktop application currently being developed by CSUN students for a COMP 380 project.</p>
+                </div>
+                <div className="tool-card-footer">
+                  <span className="tool-badge student">Student Tool</span>
+                  <ArrowRight className="arrow-icon" size={20} />
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* Placeholder for future tools */}
+            <motion.div variants={itemVariants} whileHover={{ y: -4 }}>
+              <div className="tool-card coming-soon">
+                <div className="tool-card-icon default-bg">
+                  <GraduationCap size={28} />
+                </div>
+                <div className="tool-card-content">
+                  <h3>More Tools Coming Soon</h3>
+                  <p>SOSE is actively developing more utilities to help students succeed.</p>
+                </div>
+                <div className="tool-card-footer">
+                  <span className="tool-badge student">Student Tool</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </motion.section>
+        
+        <motion.aside variants={itemVariants} className="home-sidebar">
+          <UpdatesModule />
+        </motion.aside>
+      </div>
+    </motion.div>
   );
 };
 

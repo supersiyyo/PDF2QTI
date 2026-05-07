@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "date": "2026-05-07",
+    "version": "v1.1.0",
+    "title": "Agentic Updates Workflow",
+    "type": "feature",
+    "description": "Introduced a new AI-powered workflow to automatically generate and display platform updates."
+  },
+  {
+    "id": "2",
+    "date": "2026-05-06",
+    "version": "v1.0.5",
+    "title": "Bug Fixes & UI Enhancements",
+    "type": "fix",
+    "description": "Resolved a critical issue with the QTI export endpoint and polished the homepage featured cards."
+  },
+  {
+    "id": "3",
+    "date": "2026-05-04",
+    "version": "v1.0.4",
+    "title": "Dynamic Model Selection",
+    "type": "feature",
+    "description": "Added dynamic Gemini model selection for improved performance and rate limit management."
+  }
+]

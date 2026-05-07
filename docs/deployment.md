@@ -63,7 +63,17 @@ We use a GitHub Actions workflow (`.github/workflows/deploy-frontend.yml`) to au
 2. `FTP_USERNAME`: The FTP account name.
 3. `FTP_PASSWORD`: The FTP account password.
 
-### 3. Handling React Router (SPA Routing)
+### 3. Handling Large Binaries (Canvas Critter)
+
+The repository `.gitignore` ignores large standalone executables like the 74.4MB `mostrecentCancanbuild90percentdone.zip` file for the Canvas Critter tool. This prevents repository bloat.
+To deploy this binary:
+1. Ensure the Windows build is compressed as `mostrecentCancanbuild90percentdone.zip`.
+2. Access the SiteGround File Manager or connect via FTP.
+3. Create a `downloads/` folder inside `public_html/`.
+4. Upload the zip file into the `downloads/` directory. 
+5. The React frontend will automatically resolve the link `https://csun.sose.dev/downloads/mostrecentCancanbuild90percentdone.zip`.
+
+### 4. Handling React Router (SPA Routing)
 
 Because the platform uses `react-router-dom` to manage multiple tool routes (e.g., `/instructor`, `/student`), an `.htaccess` file is critical. It must be placed in the `public_html/` directory on SiteGround to route all sub-paths back to `index.html`:
 
