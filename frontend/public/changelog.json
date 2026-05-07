@@ -1,5 +1,13 @@
 [
   {
+    "id": "8",
+    "date": "2026-05-07",
+    "version": "v1.2.6",
+    "title": "Routing & Discoverability Patch",
+    "type": "fix",
+    "description": "Resolved critical 404 errors on direct navigation and improved Student Tool discoverability by adding Canvas Critter to the categorized view."
+  },
+  {
     "id": "7",
     "date": "2026-05-07",
     "version": "v1.2.5",
