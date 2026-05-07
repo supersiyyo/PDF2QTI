@@ -274,7 +274,7 @@ async def export_qti(data: ExtractQTIRequest, background_tasks: BackgroundTasks)
         import subprocess
         try:
             subprocess.run(
-                [sys.executable, "-m", "text2qti", md_path],
+                [sys.executable, "-c", "from text2qti.cmdline import main; main()", md_path],
                 cwd=base_dir,
                 check=True,
                 capture_output=True,
