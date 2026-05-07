@@ -23,6 +23,31 @@ frontend/.env.*
 # OS generated files
 .DS_Store
 .DS_Store?
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Frontend (Node)
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.env
+frontend/.env.*
+
+# OS generated files
+.DS_Store
+.DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
@@ -31,3 +56,4 @@ Thumbs.db
 
 # Large binaries / External builds
 mostrecentCancanbuild90percentdone/
+mostrecentCancanbuild90percentdone.zip

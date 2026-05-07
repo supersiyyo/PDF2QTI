@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, GraduationCap, FileText, ArrowRight } from 'lucide-react';
+import { BookOpen, GraduationCap, FileText, ArrowRight, Gamepad2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import UpdatesModule from '../components/UpdatesModule';
 
@@ -63,6 +63,22 @@ const Home = () => {
                 </div>
                 <div className="tool-card-footer">
                   <span className="tool-badge instructor">Instructor Tool</span>
+                  <ArrowRight className="arrow-icon" size={20} />
+                </div>
+              </Link>
+            </motion.div>
+
+            <motion.div variants={itemVariants} whileHover={{ y: -4 }}>
+              <Link to="/student/canvas-critter" className="tool-card featured">
+                <div className="tool-card-icon default-bg">
+                  <Gamepad2 size={28} />
+                </div>
+                <div className="tool-card-content">
+                  <h3>Canvas Critter <span className="beta-badge" style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle' }}>Beta</span></h3>
+                  <p>A fun desktop application built in Godot. Download the standalone Windows client to get started.</p>
+                </div>
+                <div className="tool-card-footer">
+                  <span className="tool-badge student">Student Tool</span>
                   <ArrowRight className="arrow-icon" size={20} />
                 </div>
               </Link>
