@@ -65,7 +65,21 @@ Located in the `/frontend` directory, the frontend acts as a unified portal for 
 - **Educational Design System**: Uses a light, clean UI designed for faculty accessibility. Accents include CSUN Red (`#D00D2D`) and SOSE Purple (`#6B6DFF`).
 - **Updates Module**: A dynamic, cached, and interactive changelog component using Framer Motion micro-interactions. Powered by a static `changelog.json`.
 - **Tools**:
-    - **PDF2QTI**: Encapsulated in `/instructor/pdf2qti`. Features real-time SSE stream handling, resilient model execution, and a high-fidelity interactive Preview Editor for QTI creation.
+    - **PDF2QTI**: Encapsulated in `/instructor/pdf2qti`. Features real-time SSE stream handling, resilient model execution, an integrated HD video walkthrough guide, and a high-fidelity interactive Preview Editor for QTI creation.
     - **Host Live Assessment**: A mobile-optimized exam-taking environment featuring lightweight identity verification, staggered entry animations, and a high-density instructor results ledger.
     - **Canvas Critter**: Encapsulated in `/student/canvas-critter`. A dedicated landing page for downloading the standalone desktop application, featuring an integrated SlidePlayer how-to guide.
 - **Open Source Transparency**: Persistent links to the GitHub repository are integrated into the UI.
+
+## Media & Asset Hosting Architecture
+
+To maintain a lightweight Git repository and ensure high-performance delivery, all large media assets (videos, walkthrough slides) are hosted externally on the SiteGround **Static Asset Bridge**.
+
+**Key Hosting Details:**
+- **Base URL**: `https://csun.sose.dev/downloads/`
+- **Video Storage**: Hosted under `/downloads/videos/[tool-name]/howtovideo.webm`
+- **Slide Storage**: Hosted under `/downloads/slides/[tool-name]/[slide-number].png`
+
+**Benefits:**
+1. **Reduced Repo Bloat**: Prevents large binary files (like 18MB videos) from slowing down git operations.
+2. **CDN-Ready**: SiteGround's static serving is optimized for media delivery, reducing load on the application server.
+3. **Decoupled Updates**: Walkthroughs can be updated by simply swapping files on the server without requiring a code redeploy.

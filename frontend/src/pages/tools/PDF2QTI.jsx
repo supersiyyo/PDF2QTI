@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { Copy, ExternalLink, Check, Info, Lock, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UploadComponent from '../../components/UploadComponent';
 import PreviewEditor from '../../components/PreviewEditor';
 import ProcessingState from '../../components/ProcessingState';
+import VideoPlayer from '../../components/VideoPlayer';
 
 function PDF2QTI() {
   const [quizData, setQuizData] = useState(null);
@@ -17,6 +18,14 @@ function PDF2QTI() {
   const [currentModel, setCurrentModel] = useState('');
   const [examLinks, setExamLinks] = useState(null); // { student, admin }
   const [copyStatus, setCopyStatus] = useState(null); // 'student' or 'admin'
+  const playerRef = useRef(null);
+
+  const scrollToGuide = () => {
+    playerRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      playerRef.current?.openTheater();
+    }, 800); // Wait for scroll to finish
+  };
 
   const handleProcessPdf = async (file, mode, questionCount) => {
     setLoading(true);
@@ -187,12 +196,23 @@ function PDF2QTI() {
       alert("Failed to copy. Please select and copy manually.");
     }
   };
-
   return (
     <div className="app-container">
       <header className="header">
         <h1>PDF to Canvas QTI</h1>
-        <p>Transform documents and static quizzes into Canvas-ready assessments.</p>
+        <p>Stop manually typing quizzes. Instantly digitize your existing PDFs or generate AI-powered question banks directly into Canvas-ready QTI packages.</p>
+        
+        <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'center' }}>
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={scrollToGuide}
+            className="guide-trigger"
+          >
+            <div className="play-dot" />
+            Watch Guide
+          </motion.button>
+        </div>
       </header>
 
       {warning && (
@@ -422,6 +442,10 @@ function PDF2QTI() {
           </div>
         )}
       </AnimatePresence>
+
+      <div style={{ marginTop: '4rem' }}>
+        <VideoPlayer ref={playerRef} src="https://csun.sose.dev/downloads/videos/pdf2qti/howtovideo.webm" />
+      </div>
 
       <a 
         href="https://github.com/supersiyyo/PDF2QTI" 

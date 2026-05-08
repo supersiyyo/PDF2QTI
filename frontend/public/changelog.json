@@ -1,5 +1,13 @@
 [
   {
+    "id": "12",
+    "date": "2026-05-08",
+    "version": "v1.5.0",
+    "title": "Premium Visual Walkthroughs",
+    "type": "feature",
+    "description": "Introduced a high-fidelity video guide system for PDF2QTI. Features include a cinematic inline player, theater mode, 2x speed controls, and flicker-free duration tracking, all served via a high-performance static asset bridge."
+  },
+  {
     "id": "11",
     "date": "2026-05-08",
     "version": "v1.4.1",
