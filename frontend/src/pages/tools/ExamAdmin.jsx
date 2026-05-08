@@ -16,7 +16,8 @@ import {
   Lock,
   Unlock,
   BarChart3,
-  Calendar
+  Calendar,
+  Zap
 } from 'lucide-react';
 
 const ExamAdmin = () => {
@@ -41,6 +42,21 @@ const ExamAdmin = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleSetting = async (key, value) => {
+    try {
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const response = await fetch(`${baseURL}/api/exams/admin/${secretId}/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value })
+      });
+      if (!response.ok) throw new Error('Failed to update setting');
+      setData({ ...data, [key]: value });
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -173,7 +189,7 @@ const ExamAdmin = () => {
       </motion.div>
 
       {/* Stats Section */}
-      <motion.div variants={itemVariants} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem', marginBottom: '4rem' }}>
+      <motion.div variants={itemVariants} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem', marginBottom: '4rem' }}>
         <div className="glass-panel group" style={{ padding: '2rem', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, right: 0, width: '120px', height: '120px', background: 'rgba(59, 130, 246, 0.03)', borderRadius: '0 0 0 100%', transition: 'all 0.3s' }} className="group-hover:scale-110" />
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
@@ -204,6 +220,29 @@ const ExamAdmin = () => {
           </div>
           <div style={{ fontSize: '4rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
             {Math.max(0, 24 - Math.floor((new Date() - new Date(data.created_at)) / (1000 * 60 * 60)))}<span style={{ fontSize: '1.5rem', color: '#cbd5e1' }}>h</span>
+          </div>
+        </div>
+
+        <div className="glass-panel group" style={{ padding: '2rem', position: 'relative', overflow: 'hidden', background: '#f8fafc' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+            <Zap size={18} style={{ color: '#f59e0b' }} />
+            <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Live Settings</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+             <button 
+                onClick={() => handleToggleSetting('show_score', !data.show_score)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: '1px solid var(--border)', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}
+             >
+                <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Show Score</span>
+                {data.show_score ? <CheckCircle2 size={16} color="var(--success)" /> : <XCircle size={16} color="var(--error)" />}
+             </button>
+             <button 
+                onClick={() => handleToggleSetting('single_attempt', !data.single_attempt)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: '1px solid var(--border)', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}
+             >
+                <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Single Attempt</span>
+                {data.single_attempt ? <CheckCircle2 size={16} color="var(--success)" /> : <XCircle size={16} color="#94a3b8" />}
+             </button>
           </div>
         </div>
       </motion.div>

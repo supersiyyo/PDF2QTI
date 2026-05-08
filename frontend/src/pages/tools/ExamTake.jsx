@@ -82,8 +82,32 @@ const ExamTakeContent = ({ exam, loading, error, examId }) => {
   const [studentInfo, setStudentInfo] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [score, setScore] = useState(null);
+  const [questions, setQuestions] = useState([]);
 
   const { register, handleSubmit, formState: { errors } } = useForm();
+
+  useEffect(() => {
+    if (exam && exam.questions) {
+      let prepared = exam.questions.map((q, idx) => ({
+        ...q,
+        originalIndex: idx,
+        displayChoices: q.choices.map((c, cIdx) => ({ text: c, originalIndex: cIdx }))
+      }));
+
+      if (exam.shuffle_questions) {
+        prepared = prepared.sort(() => Math.random() - 0.5);
+      }
+
+      if (exam.shuffle_choices) {
+        prepared = prepared.map(q => ({
+          ...q,
+          displayChoices: q.displayChoices.sort(() => Math.random() - 0.5)
+        }));
+      }
+
+      setQuestions(prepared);
+    }
+  }, [exam]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -125,30 +149,43 @@ const ExamTakeContent = ({ exam, loading, error, examId }) => {
   const handleSubmitExam = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const answers = exam.questions.map((_, index) => {
-      const val = formData.get(`q-${index}`);
-      return val !== null ? parseInt(val) : -1;
+    
+    // Map back to original indices for backend grading
+    const originalAnswers = new Array(exam.questions.length).fill(-1);
+    
+    questions.forEach((q, qIdx) => {
+      const val = formData.get(`q-${qIdx}`);
+      if (val !== null) {
+        const selectedDisplayChoiceIdx = parseInt(val);
+        const originalChoiceIdx = q.displayChoices[selectedDisplayChoiceIdx].originalIndex;
+        originalAnswers[q.originalIndex] = originalChoiceIdx;
+      }
     });
 
-    if (answers.includes(-1)) {
+    if (originalAnswers.includes(-1)) {
       if (!confirm('You have unanswered questions. Submit anyway?')) return;
     }
 
     setSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/exams/${examId}/submit`, {
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const response = await fetch(`${baseURL}/api/exams/${examId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           student_email: studentInfo.email,
           student_id: studentInfo.studentId,
-          answers_json: answers
+          answers_json: originalAnswers
         })
       });
 
-      if (!response.ok) throw new Error('Submission failed');
-      const data = await response.json();
-      setScore(data.score);
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || 'Submission failed');
+      }
+      
+      const resData = await response.json();
+      setScore(resData.score);
       setStep('submitted');
       window.scrollTo(0, 0);
     } catch (err) {
@@ -303,7 +340,7 @@ const ExamTakeContent = ({ exam, loading, error, examId }) => {
           </header>
 
           <form onSubmit={handleSubmitExam} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            {exam.questions.map((q, idx) => (
+            {questions.map((q, idx) => (
               <motion.div 
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
@@ -324,7 +361,7 @@ const ExamTakeContent = ({ exam, loading, error, examId }) => {
                       {q.question_text}
                     </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {q.choices.map((choice, cIdx) => (
+                      {q.displayChoices.map((choice, cIdx) => (
                         <label 
                           key={cIdx}
                           style={{
@@ -341,7 +378,7 @@ const ExamTakeContent = ({ exam, loading, error, examId }) => {
                             required
                             style={{ marginTop: '4px' }}
                           />
-                          <span style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{choice}</span>
+                          <span style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{choice.text}</span>
                         </label>
                       ))}
                     </div>
@@ -365,7 +402,7 @@ const ExamTakeContent = ({ exam, loading, error, examId }) => {
                 ) : 'Complete Assessment'}
               </button>
               <p style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 }}>
-                Once submitted, you will receive your final score immediately.
+                {exam.show_score ? 'Once submitted, you will receive your final score immediately.' : 'Your submission will be recorded and sent to your instructor.'}
               </p>
             </div>
           </form>
@@ -389,20 +426,28 @@ const ExamTakeContent = ({ exam, loading, error, examId }) => {
               Your answers have been recorded.
             </p>
 
-            <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '24px', padding: '2.5rem', marginBottom: '3rem', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '6px', background: '#e2e8f0' }}>
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${score}%` }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  style={{ height: '100%', background: 'var(--success)' }}
-                />
+            {exam.show_score ? (
+              <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '24px', padding: '2.5rem', marginBottom: '3rem', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '6px', background: '#e2e8f0' }}>
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${score}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    style={{ height: '100%', background: 'var(--success)' }}
+                  />
+                </div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', tracking: '0.1em' }}>Final Assessment Score</span>
+                <div style={{ fontSize: '6rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1, marginTop: '0.5rem' }}>
+                  {score}<span style={{ fontSize: '2.5rem', color: '#cbd5e1' }}>%</span>
+                </div>
               </div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', tracking: '0.1em' }}>Final Assessment Score</span>
-              <div style={{ fontSize: '6rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1, marginTop: '0.5rem' }}>
-                {score}<span style={{ fontSize: '2.5rem', color: '#cbd5e1' }}>%</span>
-              </div>
-            </div>
+            ) : (
+                <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '24px', padding: '2rem', marginBottom: '3rem' }}>
+                    <p style={{ color: '#475569', fontSize: '0.9rem', fontWeight: 600, margin: 0 }}>
+                        Score visibility is restricted for this assessment. Please contact your instructor for results.
+                    </p>
+                </div>
+            )}
 
             <button onClick={() => window.location.href = '/'} className="btn btn-secondary" style={{ width: '100%', padding: '1rem' }}>
               Return to Tools Home

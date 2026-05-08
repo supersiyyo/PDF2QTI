@@ -4,6 +4,7 @@ import { UploadCloud } from 'lucide-react';
 const UploadComponent = ({ onProcess }) => {
   const [file, setFile] = useState(null);
   const [mode, setMode] = useState('digitize');
+  const [questionCount, setQuestionCount] = useState(10);
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -21,7 +22,7 @@ const UploadComponent = ({ onProcess }) => {
 
   const handleSubmit = () => {
     if (file) {
-      onProcess(file, mode);
+      onProcess(file, mode, questionCount);
     }
   };
 
@@ -74,6 +75,25 @@ const UploadComponent = ({ onProcess }) => {
           />
           Generate Multiple Choice
         </label>
+      </div>
+
+      <div style={{ marginTop: '1.5rem', padding: '0 0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Target Question Count</label>
+          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary)' }}>{questionCount} Questions</span>
+        </div>
+        <input 
+          type="range" 
+          min="1" 
+          max="50" 
+          value={questionCount} 
+          onChange={(e) => setQuestionCount(parseInt(e.target.value))}
+          style={{ width: '100%', accentColor: 'var(--primary)' }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
+          <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>1</span>
+          <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>50</span>
+        </div>
       </div>
 
       <button 

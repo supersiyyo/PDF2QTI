@@ -172,7 +172,11 @@ from fastapi.responses import StreamingResponse
 import json
 
 @app.post("/api/process-pdf")
-async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
+async def process_pdf(
+    mode: str = Form(...), 
+    file: UploadFile = File(...),
+    question_count: int = Form(10)
+):
     if mode not in ["generate", "digitize"]:
         raise HTTPException(status_code=400, detail="Invalid mode selected")
 
@@ -202,9 +206,9 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
             # Prepare AI Prompt
             yield f"data: {json.dumps({'status': 'info', 'message': 'Analyzing content...', 'model': 'System'})}\n\n"
             if mode == "digitize":
-                prompt_instruction = "Act as a strict data extractor. Extract the exact multiple choice questions and choices from the provided text. If no correct answer is explicitly provided, solve the question to provide the `correct_answer_index`."
+                prompt_instruction = f"Act as a strict data extractor. Extract exactly {question_count} multiple choice questions and choices from the provided text. If there are fewer than {question_count} questions in the text, extract all that are available. If no correct answer is explicitly provided, solve the question to provide the `correct_answer_index`."
             else:
-                prompt_instruction = "Act as an educator. Synthesize the provided text to invent new, high-quality multiple choice questions based on the content."
+                prompt_instruction = f"Act as an educator. Synthesize the provided text to invent {question_count} new, high-quality multiple choice questions based on the content."
 
             full_prompt = f"{prompt_instruction}\n\nDocument Text:\n{extracted_text}"
 
@@ -265,6 +269,10 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
 class ExtractQTIRequest(BaseModel):
     quiz_title: str
     questions: List[Question]
+    show_score: Optional[bool] = True
+    shuffle_questions: Optional[bool] = False
+    shuffle_choices: Optional[bool] = False
+    single_attempt: Optional[bool] = False
 
 @app.post("/api/export-qti")
 async def export_qti(data: ExtractQTIRequest, background_tasks: BackgroundTasks):
@@ -338,7 +346,11 @@ async def create_exam(data: ExtractQTIRequest, session: Session = Depends(get_se
     
     new_exam = Exam(
         title=data.quiz_title,
-        questions_json=questions_list
+        questions_json=questions_list,
+        show_score=getattr(data, "show_score", True),
+        shuffle_questions=getattr(data, "shuffle_questions", False),
+        shuffle_choices=getattr(data, "shuffle_choices", False),
+        single_attempt=getattr(data, "single_attempt", False)
     )
     session.add(new_exam)
     session.commit()
@@ -376,7 +388,11 @@ async def get_exam(exam_id: str, session: Session = Depends(get_session)):
         "id": exam.id,
         "title": exam.title,
         "questions": safe_questions,
-        "created_at": exam.created_at
+        "created_at": exam.created_at,
+        "show_score": exam.show_score,
+        "shuffle_questions": exam.shuffle_questions,
+        "shuffle_choices": exam.shuffle_choices,
+        "single_attempt": exam.single_attempt
     }
 
 @app.post("/api/exams/{exam_id}/submit")
@@ -391,6 +407,17 @@ async def submit_exam(exam_id: str, submission_data: SubmissionBase, session: Se
     if exam.status == "closed":
         raise HTTPException(status_code=403, detail="This exam is no longer accepting submissions.")
     
+    # Check for single attempt
+    if exam.single_attempt:
+        existing = session.exec(
+            select(Submission).where(
+                Submission.exam_id == exam.id,
+                Submission.student_email == submission_data.student_email
+            )
+        ).first()
+        if existing:
+            raise HTTPException(status_code=403, detail="You have already submitted this assessment.")
+
     # Calculate score
     correct_count = 0
     total_questions = len(exam.questions_json)
@@ -412,7 +439,11 @@ async def submit_exam(exam_id: str, submission_data: SubmissionBase, session: Se
     session.add(new_submission)
     session.commit()
     
-    return {"message": "Submission successful", "score": new_submission.score}
+    return {
+        "message": "Submission successful", 
+        "score": new_submission.score if exam.show_score else None,
+        "show_score": exam.show_score
+    }
 
 @app.get("/api/exams/admin/{secret_id}")
 async def get_admin_dashboard(secret_id: str, session: Session = Depends(get_session)):
@@ -430,6 +461,10 @@ async def get_admin_dashboard(secret_id: str, session: Session = Depends(get_ses
         "title": exam.title,
         "status": exam.status,
         "created_at": exam.created_at,
+        "show_score": exam.show_score,
+        "shuffle_questions": exam.shuffle_questions,
+        "shuffle_choices": exam.shuffle_choices,
+        "single_attempt": exam.single_attempt,
         "submissions": exam.submissions
     }
 
@@ -447,3 +482,28 @@ async def close_exam(secret_id: str, session: Session = Depends(get_session)):
     session.commit()
     
     return {"message": "Exam closed successfully."}
+
+@app.post("/api/exams/admin/{secret_id}/settings")
+async def update_settings(secret_id: str, settings: dict, session: Session = Depends(get_session)):
+    """Update exam settings."""
+    statement = select(Exam).where(Exam.secret_id == secret_id)
+    exam = session.exec(statement).first()
+    
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found.")
+    
+    if "show_score" in settings:
+        exam.show_score = settings["show_score"]
+    if "shuffle_questions" in settings:
+        exam.shuffle_questions = settings["shuffle_questions"]
+    if "shuffle_choices" in settings:
+        exam.shuffle_choices = settings["shuffle_choices"]
+    if "single_attempt" in settings:
+        exam.single_attempt = settings["single_attempt"]
+    if "status" in settings and settings["status"] in ["open", "closed"]:
+        exam.status = settings["status"]
+        
+    session.add(exam)
+    session.commit()
+    
+    return {"message": "Settings updated successfully."}

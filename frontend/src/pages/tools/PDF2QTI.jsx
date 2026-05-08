@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Copy, ExternalLink, Check, Info, Lock } from 'lucide-react';
+import { Copy, ExternalLink, Check, Info, Lock, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UploadComponent from '../../components/UploadComponent';
 import PreviewEditor from '../../components/PreviewEditor';
@@ -18,19 +18,20 @@ function PDF2QTI() {
   const [examLinks, setExamLinks] = useState(null); // { student, admin }
   const [copyStatus, setCopyStatus] = useState(null); // 'student' or 'admin'
 
-  const handleProcessPdf = async (file, mode) => {
+  const handleProcessPdf = async (file, mode, questionCount) => {
     setLoading(true);
     setError(null);
     setIsRetryable(false);
     setWarning(null);
     setCurrentStatus('');
     setCurrentModel('');
-    setLastCall({ file, mode });
+    setLastCall({ file, mode, questionCount });
 
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('mode', mode);
+      formData.append('question_count', questionCount);
 
       const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
       
@@ -103,7 +104,7 @@ function PDF2QTI() {
 
   const handleRetry = () => {
     if (lastCall) {
-      handleProcessPdf(lastCall.file, lastCall.mode);
+      handleProcessPdf(lastCall.file, lastCall.mode, lastCall.questionCount);
     }
   };
 
@@ -251,24 +252,32 @@ function PDF2QTI() {
                 <Clock size={14} /> Recently Generated
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {JSON.parse(localStorage.getItem('recent_exams')).map((exam, idx) => (
-                  <div 
-                    key={idx} 
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--border)' }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{exam.title}</div>
-                      <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{new Date(exam.timestamp).toLocaleString()}</div>
-                    </div>
-                    <button 
-                      onClick={() => setExamLinks(exam)}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 12px', fontSize: '0.75rem' }}
-                    >
-                      Retrieve Links
-                    </button>
-                  </div>
-                ))}
+                {(() => {
+                  try {
+                    const recent = JSON.parse(localStorage.getItem('recent_exams') || '[]');
+                    if (!Array.isArray(recent)) return null;
+                    return recent.map((exam, idx) => (
+                      <div 
+                        key={idx} 
+                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--border)' }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{exam.title}</div>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{new Date(exam.timestamp).toLocaleString()}</div>
+                        </div>
+                        <button 
+                          onClick={() => setExamLinks(exam)}
+                          className="btn btn-secondary"
+                          style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                        >
+                          Retrieve Links
+                        </button>
+                      </div>
+                    ));
+                  } catch (e) {
+                    return null;
+                  }
+                })()}
               </div>
             </motion.div>
           )}

@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Download, ArrowLeft, Zap } from 'lucide-react';
+import { Download, ArrowLeft, Zap, Eye, EyeOff, Shuffle, Repeat } from 'lucide-react';
 
 const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
   // initialData structural assumption: { quiz_title: "", questions: [...] }
   const [data, setData] = useState(initialData);
+  const [showScore, setShowScore] = useState(true);
+  const [shuffleQuestions, setShuffleQuestions] = useState(false);
+  const [shuffleChoices, setShuffleChoices] = useState(false);
+  const [singleAttempt, setSingleAttempt] = useState(false);
 
   const handleTitleChange = (text) => {
     const newData = { ...data };
@@ -29,6 +33,17 @@ const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
     setData(newData);
   };
 
+  const handleGenerate = () => {
+    const finalData = {
+      ...data,
+      show_score: showScore,
+      shuffle_questions: shuffleQuestions,
+      shuffle_choices: shuffleChoices,
+      single_attempt: singleAttempt
+    };
+    onGenerateExam(finalData);
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
@@ -50,7 +65,7 @@ const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
               backgroundColor: '#6b6dff', // SOSE Purple
               borderColor: '#6b6dff'
             }} 
-            onClick={() => onGenerateExam(data)}
+            onClick={handleGenerate}
           >
             <Zap size={18} /> Generate Emergency Exam
           </button>
@@ -61,6 +76,87 @@ const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
           >
             <Download size={18} /> Download QTI .zip
           </button>
+        </div>
+      </div>
+
+      {/* Emergency Exam Settings */}
+      <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid #e0e7ff', background: '#f5f7ff' }}>
+        <h3 style={{ fontSize: '0.8rem', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Zap size={14} /> Emergency Lifeboat Configuration
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+            <div 
+              onClick={() => setShowScore(!showScore)}
+              style={{ 
+                width: '40px', height: '22px', borderRadius: '11px', background: showScore ? 'var(--primary)' : '#cbd5e1', 
+                position: 'relative', transition: 'all 0.2s' 
+              }}
+            >
+              <div style={{ 
+                width: '18px', height: '18px', background: 'white', borderRadius: '50%', 
+                position: 'absolute', top: '2px', left: showScore ? '20px' : '2px', transition: 'all 0.2s' 
+              }} />
+            </div>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
+              {showScore ? <Eye size={14} style={{display:'inline', marginRight:'4px'}}/> : <EyeOff size={14} style={{display:'inline', marginRight:'4px'}}/>} 
+              Show Score to Student
+            </span>
+          </label>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+            <div 
+              onClick={() => setShuffleQuestions(!shuffleQuestions)}
+              style={{ 
+                width: '40px', height: '22px', borderRadius: '11px', background: shuffleQuestions ? 'var(--primary)' : '#cbd5e1', 
+                position: 'relative', transition: 'all 0.2s' 
+              }}
+            >
+              <div style={{ 
+                width: '18px', height: '18px', background: 'white', borderRadius: '50%', 
+                position: 'absolute', top: '2px', left: shuffleQuestions ? '20px' : '2px', transition: 'all 0.2s' 
+              }} />
+            </div>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
+              <Shuffle size={14} style={{display:'inline', marginRight:'4px'}}/> Shuffle Questions
+            </span>
+          </label>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+            <div 
+              onClick={() => setShuffleChoices(!shuffleChoices)}
+              style={{ 
+                width: '40px', height: '22px', borderRadius: '11px', background: shuffleChoices ? 'var(--primary)' : '#cbd5e1', 
+                position: 'relative', transition: 'all 0.2s' 
+              }}
+            >
+              <div style={{ 
+                width: '18px', height: '18px', background: 'white', borderRadius: '50%', 
+                position: 'absolute', top: '2px', left: shuffleChoices ? '20px' : '2px', transition: 'all 0.2s' 
+              }} />
+            </div>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
+              <Shuffle size={14} style={{display:'inline', marginRight:'4px'}}/> Shuffle Choices
+            </span>
+          </label>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+            <div 
+              onClick={() => setSingleAttempt(!singleAttempt)}
+              style={{ 
+                width: '40px', height: '22px', borderRadius: '11px', background: singleAttempt ? 'var(--primary)' : '#cbd5e1', 
+                position: 'relative', transition: 'all 0.2s' 
+              }}
+            >
+              <div style={{ 
+                width: '18px', height: '18px', background: 'white', borderRadius: '50%', 
+                position: 'absolute', top: '2px', left: singleAttempt ? '20px' : '2px', transition: 'all 0.2s' 
+              }} />
+            </div>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
+              <Repeat size={14} style={{display:'inline', marginRight:'4px'}}/> Single Attempt Only
+            </span>
+          </label>
         </div>
       </div>
 

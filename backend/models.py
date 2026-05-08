@@ -7,6 +7,11 @@ class ExamBase(SQLModel):
     title: str
     questions_json: List[Dict[str, Any]] = Field(default=[], sa_column=Column(JSON))
     status: str = Field(default="open") # "open" or "closed"
+    show_score: bool = Field(default=True)
+    shuffle_questions: bool = Field(default=False)
+    shuffle_choices: bool = Field(default=False)
+    single_attempt: bool = Field(default=False)
+
 
 class Exam(ExamBase, table=True):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
