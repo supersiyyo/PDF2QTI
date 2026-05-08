@@ -33,7 +33,7 @@ function PDF2QTI() {
       formData.append('mode', mode);
       formData.append('question_count', questionCount);
 
-      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`).replace(/\/+$/, '');
       
       const response = await fetch(`${baseURL}/api/process-pdf`, {
         method: 'POST',
@@ -110,7 +110,7 @@ function PDF2QTI() {
 
   const handleExportQti = async (finalData) => {
     try {
-      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`).replace(/\/+$/, '');
       const response = await axios.post(`${baseURL}/api/export-qti`, finalData, {
         responseType: 'blob'
       });
@@ -136,7 +136,7 @@ function PDF2QTI() {
   const handleGenerateExam = async (finalData) => {
     setLoading(true);
     try {
-      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`).replace(/\/+$/, '');
       const response = await axios.post(`${baseURL}/api/exams`, finalData);
       
       const { id, secret_id } = response.data;
