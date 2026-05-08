@@ -34,7 +34,8 @@ const ExamAdmin = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/exams/admin/${secretId}`);
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const response = await fetch(`${baseURL}/api/exams/admin/${secretId}`);
       if (!response.ok) throw new Error('Invalid or expired admin link');
       const json = await response.json();
       setData(json);
@@ -65,7 +66,8 @@ const ExamAdmin = () => {
     
     setClosing(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/exams/admin/${secretId}/close`, {
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const response = await fetch(`${baseURL}/api/exams/admin/${secretId}/close`, {
         method: 'POST'
       });
       if (!response.ok) throw new Error('Failed to close exam');

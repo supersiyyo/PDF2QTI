@@ -21,7 +21,8 @@ const ExamTake = () => {
 
   const fetchExam = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/exams/${examId}`);
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const response = await fetch(`${baseURL}/api/exams/${examId}`);
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.detail || 'Failed to load exam');
