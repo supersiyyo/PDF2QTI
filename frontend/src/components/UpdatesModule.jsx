@@ -20,7 +20,8 @@ const UpdatesModule = () => {
 
   const fetchUpdates = async () => {
     try {
-      const response = await fetch('/changelog.json');
+      // Append a timestamp to bypass aggressive CDN/browser caching
+      const response = await fetch(`/changelog.json?t=${new Date().getTime()}`);
       if (!response.ok) throw new Error('Failed to fetch changelog');
       const data = await response.json();
       cachedUpdates = data;
