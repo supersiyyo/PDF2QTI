@@ -1,5 +1,13 @@
 [
   {
+    "id": "9",
+    "date": "2026-05-07",
+    "version": "v1.3.0",
+    "title": "Emergency Canvas Lifeboat",
+    "type": "feature",
+    "description": "Launched a high-concurrency mobile assessment bridge with 'Secret Link' distribution, 24-hour data sovereignty, and persistent instructor link recovery."
+  },
+  {
     "id": "8",
     "date": "2026-05-07",
     "version": "v1.2.6",
