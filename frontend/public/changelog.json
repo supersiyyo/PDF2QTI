@@ -1,5 +1,13 @@
 [
   {
+    "id": "10",
+    "date": "2026-05-08",
+    "version": "v1.4.0",
+    "title": "Live Assessment Bridge Refinements",
+    "type": "feature",
+    "description": "Renamed the Assessment Lifeboat to the 'Live Assessment Bridge', introduced a clean numeric input for question counts, added official Google privacy policy links for Tier 1 billing, and fixed critical backend database schema errors."
+  },
+  {
     "id": "9",
     "date": "2026-05-07",
     "version": "v1.3.0",
