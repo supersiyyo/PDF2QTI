@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Copy, ExternalLink, Check, Info } from 'lucide-react';
+import { Copy, ExternalLink, Check, Info, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UploadComponent from '../../components/UploadComponent';
 import PreviewEditor from '../../components/PreviewEditor';
@@ -141,10 +141,19 @@ function PDF2QTI() {
       const { id, secret_id } = response.data;
       const origin = window.location.origin;
       
-      setExamLinks({
+      const newLinks = {
         student: `${origin}/take/${id}`,
-        admin: `${origin}/admin/${secret_id}`
-      });
+        admin: `${origin}/admin/${secret_id}`,
+        title: finalData.quiz_title || 'Untitled Assessment',
+        timestamp: new Date().toISOString()
+      };
+      
+      setExamLinks(newLinks);
+      
+      // Persist to localStorage so instructor doesn't lose it
+      const recent = JSON.parse(localStorage.getItem('recent_exams') || '[]');
+      localStorage.setItem('recent_exams', JSON.stringify([newLinks, ...recent].slice(0, 5)));
+      
     } catch (err) {
       console.error("Exam generation failed", err);
       alert("Failed to generate exam. Please check console.");
@@ -153,10 +162,29 @@ function PDF2QTI() {
     }
   };
 
-  const copyToClipboard = (text, type) => {
-    navigator.clipboard.writeText(text);
-    setCopyStatus(type);
-    setTimeout(() => setCopyStatus(null), 2000);
+  const copyToClipboard = async (text, type) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for non-HTTPS local dev
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      setCopyStatus(type);
+      setTimeout(() => setCopyStatus(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      alert("Failed to copy. Please select and copy manually.");
+    }
   };
 
   return (
@@ -208,7 +236,54 @@ function PDF2QTI() {
       {loading ? (
         <ProcessingState status={currentStatus} model={currentModel} />
       ) : !quizData ? (
-        <UploadComponent onProcess={handleProcessPdf} />
+        <>
+          <UploadComponent onProcess={handleProcessPdf} />
+          
+          {/* Recent Assessments Quick Access */}
+          {localStorage.getItem('recent_exams') && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-panel"
+              style={{ marginTop: '2rem', padding: '1.5rem' }}
+            >
+              <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Clock size={14} /> Recently Generated
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {JSON.parse(localStorage.getItem('recent_exams')).map((exam, idx) => (
+                  <div 
+                    key={idx} 
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--border)' }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{exam.title}</div>
+                      <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{new Date(exam.timestamp).toLocaleString()}</div>
+                    </div>
+                    <button 
+                      onClick={() => setExamLinks(exam)}
+                      className="btn btn-secondary"
+                      style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                    >
+                      Retrieve Links
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Privacy & Compliance Disclosure */}
+          <div style={{ marginTop: '3rem', padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem', color: '#475569' }}>
+              <Lock size={16} />
+              <span style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Privacy & Data Governance</span>
+            </div>
+            <p style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+              <strong>Zero Training Guarantee:</strong> This application utilizes Google Gemini Enterprise-grade endpoints. Unlike consumer AI, data processed through this bridge is <strong>not used for model training</strong>. Your assessments and student responses remain ephemeral and are purged from our secure SQLite bridge every 24 hours.
+            </p>
+          </div>
+        </>
       ) : (
         <div style={{ animation: 'fadeInResult 0.45s ease' }}>
           <PreviewEditor 
@@ -220,10 +295,10 @@ function PDF2QTI() {
         </div>
       )}
 
-      {/* Success Modal */}
+      {/* Success Modal - Background click disabled to prevent accidental loss */}
       <AnimatePresence>
         {examLinks && (
-          <div className="modal-overlay" onClick={() => setExamLinks(null)}>
+          <div className="modal-overlay">
             <motion.div 
               className="modal-content glass-panel"
               initial={{ opacity: 0, scale: 0.95 }}
