@@ -444,7 +444,7 @@ function PDF2QTI() {
       </AnimatePresence>
 
       <div style={{ marginTop: '4rem' }}>
-        <VideoPlayer ref={playerRef} src="/videos/howtovideo.webm" />
+        <VideoPlayer ref={playerRef} src="https://csun.sose.dev/downloads/videos/pdf2qti/howtovideo.webm" />
       </div>
 
       <a 
