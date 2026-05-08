@@ -7,6 +7,8 @@ import Home from './pages/Home';
 import ToolsCategory from './pages/ToolsCategory';
 import PDF2QTI from './pages/tools/PDF2QTI';
 import CanvasCritter from './pages/tools/CanvasCritter';
+import ExamTake from './pages/tools/ExamTake';
+import ExamAdmin from './pages/tools/ExamAdmin';
 
 // Global Styles
 import './App.css'; // You may keep or remove this if relying purely on index.css
@@ -25,6 +27,10 @@ function App() {
             
             <Route path="/instructor/pdf2qti" element={<PDF2QTI />} />
             <Route path="/student/canvas-critter" element={<CanvasCritter />} />
+            
+            {/* Emergency Assessment Routes */}
+            <Route path="/take/:examId" element={<ExamTake />} />
+            <Route path="/admin/:secretId" element={<ExamAdmin />} />
             
             {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" replace />} />

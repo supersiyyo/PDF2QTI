@@ -28,7 +28,8 @@ Railway provides a seamless deployment experience for Python applications by aut
 3. Choose "Deploy from GitHub repo" and select your repository.
 4. Go to the Service Settings and configure the **Root Directory** to `/backend`.
 5. Navigate to the Variables tab and add your `GEMINI_API_KEY`.
-6. Note the Public Networking URL generated for the backend (e.g., `https://pdf2qti-backend-production.up.railway.app`).
+6. **Persistence (SQLite)**: Since the Live Assessment Bridge is "ephemeral by design," the default transient storage provided by Railway is acceptable. However, for reliability during a live exam, it is recommended to mount a Volume at `/app/database.db` to ensure the SQLite file persists across deployments.
+7. Note the Public Networking URL generated for the backend (e.g., `https://pdf2qti-backend-production.up.railway.app`).
 
 ---
 

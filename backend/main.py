@@ -5,7 +5,7 @@ import tempfile
 import shutil
 import uuid
 from typing import List, Optional
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -13,6 +13,11 @@ from dotenv import load_dotenv
 import pdfplumber
 from google import genai
 from google.genai import errors as genai_errors
+from sqlmodel import Session, select, delete
+from datetime import datetime, timedelta
+
+from database import engine, init_db, get_session
+from models import Exam, Submission, SubmissionBase
 
 # Load environment variables
 load_dotenv()
@@ -22,11 +27,33 @@ app = FastAPI(title="PDF2QTI API")
 # Setup CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "https://csun.sose.dev"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
+
+def cleanup_old_exams(session: Session):
+    """Delete exams and submissions older than 24 hours."""
+    threshold = datetime.utcnow() - timedelta(hours=24)
+    # Get old exams
+    statement = select(Exam).where(Exam.created_at < threshold)
+    results = session.exec(statement)
+    count = 0
+    for exam in results:
+        # Submissions will be deleted via cascade or manual if needed
+        # In SQLModel/SQLAlchemy, Relationship with cascade is better, 
+        # but let's just delete the exam and submissions manually here if no cascade set.
+        # Actually, let's just delete the exam records.
+        session.delete(exam)
+        count += 1
+    if count > 0:
+        session.commit()
+        print(f"[Cleanup] Deleted {count} expired exams.")
 
 # AI Schema Configuration
 class Question(BaseModel):
@@ -145,7 +172,11 @@ from fastapi.responses import StreamingResponse
 import json
 
 @app.post("/api/process-pdf")
-async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
+async def process_pdf(
+    mode: str = Form(...), 
+    file: UploadFile = File(...),
+    question_count: int = Form(10)
+):
     if mode not in ["generate", "digitize"]:
         raise HTTPException(status_code=400, detail="Invalid mode selected")
 
@@ -175,9 +206,9 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
             # Prepare AI Prompt
             yield f"data: {json.dumps({'status': 'info', 'message': 'Analyzing content...', 'model': 'System'})}\n\n"
             if mode == "digitize":
-                prompt_instruction = "Act as a strict data extractor. Extract the exact multiple choice questions and choices from the provided text. If no correct answer is explicitly provided, solve the question to provide the `correct_answer_index`."
+                prompt_instruction = f"Act as a strict data extractor. Extract exactly {question_count} multiple choice questions and choices from the provided text. If there are fewer than {question_count} questions in the text, extract all that are available. If no correct answer is explicitly provided, solve the question to provide the `correct_answer_index`."
             else:
-                prompt_instruction = "Act as an educator. Synthesize the provided text to invent new, high-quality multiple choice questions based on the content."
+                prompt_instruction = f"Act as an educator. Synthesize the provided text to invent {question_count} new, high-quality multiple choice questions based on the content."
 
             full_prompt = f"{prompt_instruction}\n\nDocument Text:\n{extracted_text}"
 
@@ -238,6 +269,9 @@ async def process_pdf(mode: str = Form(...), file: UploadFile = File(...)):
 class ExtractQTIRequest(BaseModel):
     quiz_title: str
     questions: List[Question]
+    show_score: Optional[bool] = True
+    shuffle_questions: Optional[bool] = False
+    shuffle_choices: Optional[bool] = False
 
 @app.post("/api/export-qti")
 async def export_qti(data: ExtractQTIRequest, background_tasks: BackgroundTasks):
@@ -300,3 +334,159 @@ async def export_qti(data: ExtractQTIRequest, background_tasks: BackgroundTasks)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- Emergency Assessment Endpoints ---
+
+@app.post("/api/exams")
+async def create_exam(data: ExtractQTIRequest, session: Session = Depends(get_session)):
+    """Create a new exam from extracted questions."""
+    # Convert Question objects to dicts for JSON storage
+    questions_list = [q.dict() for q in data.questions]
+    
+    new_exam = Exam(
+        title=data.quiz_title,
+        questions_json=questions_list,
+        show_score=getattr(data, "show_score", True),
+        shuffle_questions=getattr(data, "shuffle_questions", False),
+        shuffle_choices=getattr(data, "shuffle_choices", False)
+    )
+    session.add(new_exam)
+    session.commit()
+    session.refresh(new_exam)
+    
+    return {
+        "id": new_exam.id,
+        "secret_id": new_exam.secret_id,
+        "title": new_exam.title
+    }
+
+@app.get("/api/exams/{exam_id}")
+async def get_exam(exam_id: str, session: Session = Depends(get_session)):
+    """Fetch exam details (without secret_id) for students."""
+    cleanup_old_exams(session)
+    
+    statement = select(Exam).where(Exam.id == exam_id)
+    exam = session.exec(statement).first()
+    
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found or expired.")
+    
+    if exam.status == "closed":
+        raise HTTPException(status_code=403, detail="This exam has been closed.")
+    
+    # Hide correct answers from the student-facing JSON
+    safe_questions = []
+    for q in exam.questions_json:
+        safe_q = q.copy()
+        if "correct_answer_index" in safe_q:
+            del safe_q["correct_answer_index"]
+        safe_questions.append(safe_q)
+        
+    return {
+        "id": exam.id,
+        "title": exam.title,
+        "questions": safe_questions,
+        "created_at": exam.created_at,
+        "show_score": exam.show_score,
+        "shuffle_questions": exam.shuffle_questions,
+        "shuffle_choices": exam.shuffle_choices
+    }
+
+@app.post("/api/exams/{exam_id}/submit")
+async def submit_exam(exam_id: str, submission_data: SubmissionBase, session: Session = Depends(get_session)):
+    """Submit student responses."""
+    statement = select(Exam).where(Exam.id == exam_id)
+    exam = session.exec(statement).first()
+    
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found or expired.")
+    
+    if exam.status == "closed":
+        raise HTTPException(status_code=403, detail="This exam is no longer accepting submissions.")
+    
+    # Calculate score
+    correct_count = 0
+    total_questions = len(exam.questions_json)
+    
+    for i, student_ans in enumerate(submission_data.answers_json):
+        if i < total_questions:
+            if student_ans == exam.questions_json[i].get("correct_answer_index"):
+                correct_count += 1
+    
+    score = (correct_count / total_questions * 100) if total_questions > 0 else 0
+    
+    new_submission = Submission(
+        exam_id=exam.id,
+        student_email=submission_data.student_email,
+        student_id=submission_data.student_id,
+        answers_json=submission_data.answers_json,
+        score=round(score, 2)
+    )
+    session.add(new_submission)
+    session.commit()
+    
+    return {
+        "message": "Submission successful", 
+        "score": new_submission.score if exam.show_score else None,
+        "show_score": exam.show_score
+    }
+
+@app.get("/api/exams/admin/{secret_id}")
+async def get_admin_dashboard(secret_id: str, session: Session = Depends(get_session)):
+    """Admin dashboard view with all submissions."""
+    cleanup_old_exams(session)
+    
+    statement = select(Exam).where(Exam.secret_id == secret_id)
+    exam = session.exec(statement).first()
+    
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found or expired.")
+    
+    return {
+        "id": exam.id,
+        "title": exam.title,
+        "status": exam.status,
+        "created_at": exam.created_at,
+        "show_score": exam.show_score,
+        "shuffle_questions": exam.shuffle_questions,
+        "shuffle_choices": exam.shuffle_choices,
+        "submissions": exam.submissions
+    }
+
+@app.post("/api/exams/admin/{secret_id}/close")
+async def close_exam(secret_id: str, session: Session = Depends(get_session)):
+    """Close the exam to new submissions."""
+    statement = select(Exam).where(Exam.secret_id == secret_id)
+    exam = session.exec(statement).first()
+    
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found.")
+    
+    exam.status = "closed"
+    session.add(exam)
+    session.commit()
+    
+    return {"message": "Exam closed successfully."}
+
+@app.post("/api/exams/admin/{secret_id}/settings")
+async def update_settings(secret_id: str, settings: dict, session: Session = Depends(get_session)):
+    """Update exam settings."""
+    statement = select(Exam).where(Exam.secret_id == secret_id)
+    exam = session.exec(statement).first()
+    
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found.")
+    
+    if "show_score" in settings:
+        exam.show_score = settings["show_score"]
+    if "shuffle_questions" in settings:
+        exam.shuffle_questions = settings["shuffle_questions"]
+    if "shuffle_choices" in settings:
+        exam.shuffle_choices = settings["shuffle_choices"]
+    if "status" in settings and settings["status"] in ["open", "closed"]:
+        exam.status = settings["status"]
+        
+    session.add(exam)
+    session.commit()
+    
+    return {"message": "Settings updated successfully."}

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Download, ArrowLeft } from 'lucide-react';
+import { Download, ArrowLeft, Zap, Eye, EyeOff, Shuffle, Repeat } from 'lucide-react';
 
-const PreviewEditor = ({ initialData, onExport, onReset }) => {
+const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
   // initialData structural assumption: { quiz_title: "", questions: [...] }
   const [data, setData] = useState(initialData);
+  const [showScore, setShowScore] = useState(true);
+  const [shuffleQuestions, setShuffleQuestions] = useState(false);
+  const [shuffleChoices, setShuffleChoices] = useState(false);
 
   const handleTitleChange = (text) => {
     const newData = { ...data };
@@ -29,6 +32,16 @@ const PreviewEditor = ({ initialData, onExport, onReset }) => {
     setData(newData);
   };
 
+  const handleGenerate = () => {
+    const finalData = {
+      ...data,
+      show_score: showScore,
+      shuffle_questions: shuffleQuestions,
+      shuffle_choices: shuffleChoices
+    };
+    onGenerateExam(finalData);
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
@@ -38,13 +51,96 @@ const PreviewEditor = ({ initialData, onExport, onReset }) => {
         >
           <ArrowLeft size={18} /> Start Over
         </button>
-        <button 
-          className="btn-primary" 
-          style={{ width: 'auto', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }} 
-          onClick={() => onExport(data)}
-        >
-          <Download size={18} /> Download QTI .zip
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            className="btn-primary" 
+            style={{ 
+              width: 'auto', 
+              margin: 0, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              backgroundColor: '#6b6dff', // SOSE Purple
+              borderColor: '#6b6dff'
+            }} 
+            onClick={handleGenerate}
+          >
+            <Zap size={18} /> Host Live Assessment
+          </button>
+          <button 
+            className="btn-primary" 
+            style={{ width: 'auto', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }} 
+            onClick={() => onExport(data)}
+          >
+            <Download size={18} /> Download QTI .zip
+          </button>
+        </div>
+      </div>
+
+      {/* Emergency Exam Settings */}
+      <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid #e0e7ff', background: '#f5f7ff' }}>
+        <h3 style={{ fontSize: '0.8rem', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Zap size={14} /> Live Proctoring Controls
+        </h3>
+        <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+          Create a <strong>Live Assessment</strong> to get a secure link you can share with students immediately. You'll receive a private dashboard to monitor submissions and view auto-graded results in real-time.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+            <div 
+              onClick={() => setShowScore(!showScore)}
+              style={{ 
+                width: '40px', height: '22px', borderRadius: '11px', background: showScore ? 'var(--primary)' : '#cbd5e1', 
+                position: 'relative', transition: 'all 0.2s' 
+              }}
+            >
+              <div style={{ 
+                width: '18px', height: '18px', background: 'white', borderRadius: '50%', 
+                position: 'absolute', top: '2px', left: showScore ? '20px' : '2px', transition: 'all 0.2s' 
+              }} />
+            </div>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
+              {showScore ? <Eye size={14} style={{display:'inline', marginRight:'4px'}}/> : <EyeOff size={14} style={{display:'inline', marginRight:'4px'}}/>} 
+              Show Score to Student
+            </span>
+          </label>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+            <div 
+              onClick={() => setShuffleQuestions(!shuffleQuestions)}
+              style={{ 
+                width: '40px', height: '22px', borderRadius: '11px', background: shuffleQuestions ? 'var(--primary)' : '#cbd5e1', 
+                position: 'relative', transition: 'all 0.2s' 
+              }}
+            >
+              <div style={{ 
+                width: '18px', height: '18px', background: 'white', borderRadius: '50%', 
+                position: 'absolute', top: '2px', left: shuffleQuestions ? '20px' : '2px', transition: 'all 0.2s' 
+              }} />
+            </div>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
+              <Shuffle size={14} style={{display:'inline', marginRight:'4px'}}/> Shuffle Questions
+            </span>
+          </label>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+            <div 
+              onClick={() => setShuffleChoices(!shuffleChoices)}
+              style={{ 
+                width: '40px', height: '22px', borderRadius: '11px', background: shuffleChoices ? 'var(--primary)' : '#cbd5e1', 
+                position: 'relative', transition: 'all 0.2s' 
+              }}
+            >
+              <div style={{ 
+                width: '18px', height: '18px', background: 'white', borderRadius: '50%', 
+                position: 'absolute', top: '2px', left: shuffleChoices ? '20px' : '2px', transition: 'all 0.2s' 
+              }} />
+            </div>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
+              <Shuffle size={14} style={{display:'inline', marginRight:'4px'}}/> Shuffle Choices
+            </span>
+          </label>
+        </div>
       </div>
 
       <div className="surface-card">

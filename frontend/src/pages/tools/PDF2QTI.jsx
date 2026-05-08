@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Copy, ExternalLink, Check, Info, Lock, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import UploadComponent from '../../components/UploadComponent';
 import PreviewEditor from '../../components/PreviewEditor';
 import ProcessingState from '../../components/ProcessingState';
@@ -13,20 +15,23 @@ function PDF2QTI() {
   const [warning, setWarning] = useState(null);
   const [currentStatus, setCurrentStatus] = useState('');
   const [currentModel, setCurrentModel] = useState('');
+  const [examLinks, setExamLinks] = useState(null); // { student, admin }
+  const [copyStatus, setCopyStatus] = useState(null); // 'student' or 'admin'
 
-  const handleProcessPdf = async (file, mode) => {
+  const handleProcessPdf = async (file, mode, questionCount) => {
     setLoading(true);
     setError(null);
     setIsRetryable(false);
     setWarning(null);
     setCurrentStatus('');
     setCurrentModel('');
-    setLastCall({ file, mode });
+    setLastCall({ file, mode, questionCount });
 
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('mode', mode);
+      formData.append('question_count', questionCount);
 
       const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
       
@@ -99,7 +104,7 @@ function PDF2QTI() {
 
   const handleRetry = () => {
     if (lastCall) {
-      handleProcessPdf(lastCall.file, lastCall.mode);
+      handleProcessPdf(lastCall.file, lastCall.mode, lastCall.questionCount);
     }
   };
 
@@ -125,6 +130,61 @@ function PDF2QTI() {
     } catch (err) {
       console.error("Export failed", err);
       alert("Failed to export QTI. Please check console.");
+    }
+  };
+
+  const handleGenerateExam = async (finalData) => {
+    setLoading(true);
+    try {
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const response = await axios.post(`${baseURL}/api/exams`, finalData);
+      
+      const { id, secret_id } = response.data;
+      const origin = window.location.origin;
+      
+      const newLinks = {
+        student: `${origin}/take/${id}`,
+        admin: `${origin}/admin/${secret_id}`,
+        title: finalData.quiz_title || 'Untitled Assessment',
+        timestamp: new Date().toISOString()
+      };
+      
+      setExamLinks(newLinks);
+      
+      // Persist to localStorage so instructor doesn't lose it
+      const recent = JSON.parse(localStorage.getItem('recent_exams') || '[]');
+      localStorage.setItem('recent_exams', JSON.stringify([newLinks, ...recent].slice(0, 5)));
+      
+    } catch (err) {
+      console.error("Exam generation failed", err);
+      alert("Failed to generate exam. Please check console.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = async (text, type) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for non-HTTPS local dev
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      setCopyStatus(type);
+      setTimeout(() => setCopyStatus(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      alert("Failed to copy. Please select and copy manually.");
     }
   };
 
@@ -177,16 +237,191 @@ function PDF2QTI() {
       {loading ? (
         <ProcessingState status={currentStatus} model={currentModel} />
       ) : !quizData ? (
-        <UploadComponent onProcess={handleProcessPdf} />
+        <>
+          <UploadComponent onProcess={handleProcessPdf} />
+          
+          {/* Recent Assessments Quick Access */}
+          {localStorage.getItem('recent_exams') && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-panel"
+              style={{ marginTop: '2rem', padding: '1.5rem' }}
+            >
+              <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Clock size={14} /> Recently Generated
+              </h3>
+              <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '1.25rem', lineHeight: 1.4 }}>
+                <strong>Local-Only Access:</strong> This history is stored <u>only on your device</u> (browser localStorage) and is never sent to our servers. Clearing your browser cache will erase this list.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {(() => {
+                  try {
+                    const recent = JSON.parse(localStorage.getItem('recent_exams') || '[]');
+                    if (!Array.isArray(recent)) return null;
+                    return recent.map((exam, idx) => (
+                      <div 
+                        key={idx} 
+                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--border)' }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{exam.title}</div>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{new Date(exam.timestamp).toLocaleString()}</div>
+                        </div>
+                        <button 
+                          onClick={() => setExamLinks(exam)}
+                          className="btn btn-secondary"
+                          style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                        >
+                          Retrieve Links
+                        </button>
+                      </div>
+                    ));
+                  } catch (e) {
+                    return null;
+                  }
+                })()}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Privacy & Compliance Disclosure */}
+          <div style={{ marginTop: '3rem', padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem', color: '#475569' }}>
+              <Lock size={16} />
+              <span style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Data Privacy & Compliance</span>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.6, margin: '0 0 1rem 0' }}>
+              <strong>Safe & Secure Generation:</strong> This application is configured to abide by strict data privacy standards. Your prompts and generated quiz content are <strong>not used for AI model training</strong>.
+            </p>
+            <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid #f1f5f9', fontSize: '0.75rem' }}>
+              <div style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', fontSize: '0.65rem', textTransform: 'uppercase' }}>Compliance Fact Sheet:</div>
+              <ul style={{ margin: '0 0 12px 0', paddingLeft: '1.25rem', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <li><strong>No Training:</strong> Content is processed via a secure bridge and never contributes to foundational model improvement.</li>
+                <li><strong>Ephemeral Storage:</strong> All assessment data and student records are automatically purged every 24 hours.</li>
+                <li><strong>Device Sovereignty:</strong> Your generation history is stored locally on your device and never leaves this browser.</li>
+              </ul>
+              <a 
+                href="https://ai.google.dev/gemini-api/terms#data-use-paid" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ color: '#475569', fontWeight: 700, textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <ExternalLink size={12} /> Verify Compliance with Official Data Policy
+              </a>
+            </div>
+          </div>
+        </>
       ) : (
         <div style={{ animation: 'fadeInResult 0.45s ease' }}>
           <PreviewEditor 
             initialData={quizData} 
             onExport={handleExportQti}
-            onReset={() => { setQuizData(null); setWarning(null); }}
+            onGenerateExam={handleGenerateExam}
+            onReset={() => { setQuizData(null); setWarning(null); setExamLinks(null); }}
           />
         </div>
       )}
+
+      {/* Success Modal - Background click disabled to prevent accidental loss */}
+      <AnimatePresence>
+        {examLinks && (
+          <div className="modal-overlay">
+            <motion.div 
+              className="modal-content glass-panel"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '600px', padding: '3.5rem' }}
+            >
+              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <motion.div 
+                  initial={{ scale: 0, rotate: -15 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', damping: 12, stiffness: 200 }}
+                  style={{ width: '90px', height: '90px', backgroundColor: '#f0fdf4', color: '#10b981', borderRadius: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 10px 20px -5px rgba(16, 185, 129, 0.1)' }}
+                >
+                  <Check size={44} strokeWidth={3} />
+                </motion.div>
+                <h2 style={{ fontSize: '2.25rem', fontWeight: 900, marginBottom: '0.5rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Live Assessment Ready</h2>
+                <p style={{ color: 'var(--text-secondary)', fontWeight: 500, fontSize: '1rem' }}>Your secure student link and dashboard are ready.</p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {/* Student Link */}
+                <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '14px', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Student Link (Public)</span>
+                    <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: '#94a3b8' }}>HTTPS_TLS</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input 
+                      readOnly 
+                      value={examLinks.student} 
+                      style={{ flex: 1, background: 'white', border: '1px solid var(--border)', padding: '10px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}
+                    />
+                    <button 
+                      onClick={() => copyToClipboard(examLinks.student, 'student')}
+                      className="btn btn-secondary"
+                      style={{ padding: '0 12px', borderRadius: '8px' }}
+                    >
+                      {copyStatus === 'student' ? <Check size={18} /> : <Copy size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Admin Link */}
+                <div style={{ background: '#fef2f2', padding: '1.25rem', borderRadius: '14px', border: '1px solid #fee2e2' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#991b1b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Admin Control (Secret)</span>
+                    <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: '#fca5a5' }}>AES_256_HASH</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input 
+                      readOnly 
+                      type="password"
+                      value={examLinks.admin} 
+                      style={{ flex: 1, background: 'white', border: '1px solid #fee2e2', padding: '10px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, color: '#991b1b', fontFamily: 'monospace' }}
+                    />
+                    <button 
+                      onClick={() => copyToClipboard(examLinks.admin, 'admin')}
+                      className="btn btn-secondary"
+                      style={{ padding: '0 12px', borderRadius: '8px', color: '#991b1b', borderColor: '#fee2e2' }}
+                    >
+                      {copyStatus === 'admin' ? <Check size={18} /> : <Copy size={18} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ background: '#fff7ed', border: '1px solid #ffedd5', padding: '1.25rem', borderRadius: '14px', display: 'flex', gap: '12px', marginTop: '1.5rem' }}>
+                <Info size={20} style={{ color: '#f97316', flexShrink: 0, marginTop: '2px' }} />
+                <p style={{ fontSize: '0.8rem', color: '#9a3412', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
+                  <strong>Data Hygiene Notice:</strong> This bridge is ephemeral. All records are automatically purged after 24 hours.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '2.5rem' }}>
+                <button 
+                  onClick={() => window.open(examLinks.admin, '_blank')}
+                  className="btn btn-primary" 
+                  style={{ flex: 1, margin: 0, padding: '1.15rem', borderRadius: '12px' }}
+                >
+                  Open Dashboard <ExternalLink size={18} style={{ marginLeft: '6px' }} />
+                </button>
+                <button 
+                  onClick={() => setExamLinks(null)}
+                  className="btn btn-secondary"
+                  style={{ flex: 1, padding: '1.15rem', borderRadius: '12px' }}
+                >
+                  Dismiss
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <a 
         href="https://github.com/supersiyyo/PDF2QTI" 

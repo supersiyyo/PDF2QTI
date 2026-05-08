@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -15,7 +15,9 @@
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.11.0",
     "react": "^18.3.1",
+    "react-csv": "^2.2.2",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.75.0",
     "react-router-dom": "^7.15.0"
   },
   "devDependencies": {

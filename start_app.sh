@@ -8,7 +8,7 @@ echo "Starting PDF2QTI Services..."
 # Try to use gnome-terminal (default on Ubuntu/GNOME)
 if command -v gnome-terminal &> /dev/null; then
     echo "Launching Backend..."
-    gnome-terminal --title="PDF2QTI Backend" -- bash -c "cd \"$PROJECT_DIR/backend\" && source .venv/bin/activate && uvicorn main:app --reload; exec bash"
+    gnome-terminal --title="PDF2QTI Backend" -- bash -c "cd \"$PROJECT_DIR/backend\" && source .venv/bin/activate && uvicorn main:app --reload --host 0.0.0.0; exec bash"
     
     echo "Launching Frontend..."
     gnome-terminal --title="PDF2QTI Frontend" -- bash -c "cd \"$PROJECT_DIR/frontend\" && npm run dev; exec bash"
@@ -16,7 +16,7 @@ if command -v gnome-terminal &> /dev/null; then
 # Fallback to xterm if gnome-terminal isn't available
 elif command -v xterm &> /dev/null; then
     echo "Launching Backend..."
-    xterm -T "Doc-to-Quiz Backend" -e bash -c "cd \"$PROJECT_DIR/backend\" && source .venv/bin/activate && uvicorn main:app --reload; exec bash" &
+    xterm -T "Doc-to-Quiz Backend" -e bash -c "cd \"$PROJECT_DIR/backend\" && source .venv/bin/activate && uvicorn main:app --reload --host 0.0.0.0; exec bash" &
     
     echo "Launching Frontend..."
     xterm -T "Doc-to-Quiz Frontend" -e bash -c "cd \"$PROJECT_DIR/frontend\" && npm run dev; exec bash" &

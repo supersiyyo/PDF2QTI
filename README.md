@@ -14,11 +14,17 @@ Currently featured is **PDF to Canvas QTI** (formerly PDF2QTI), a robust full-st
   - Real-time Streaming Feedback (SSE) and Non-blocking Execution.
   - Digitize Mode (extract existing questions) & Generate Mode (invent new questions).
   - Converts quiz data into a valid QTI 1.2 `.zip` package via `text2qti`.
+- **Live Assessment Bridge**: 
+  - **Friction-less Distribution**: Generates unique "Secret Links" for students and instructors, bypassing SSO/Canvas Web bottlenecks during outages or for direct classroom delivery.
+  - **Mobile-Optimized Intake**: Clean, high-performance exam interface designed for student mobile devices.
+  - **Real-time Admin Dashboard**: Monitor class performance and export student scores to CSV for manual Canvas upload.
+  - **Ephemeral Storage**: Automatic 24-hour data wipe to maintain hygiene and security.
+  - **Privacy & Compliance**: Integrated links to official Google Gemini Data Policies to verify zero-training status on paid tiers.
 - **Premium User Experience**:
   - High-Fidelity Skeleton UI with a live timer and educational facts.
   - Interactive Preview Editor to review and edit AI-generated questions before export.
   - Interactive **Updates Module** on the homepage featuring staggered Framer Motion micro-interactions and a global changelog cache.
-- **Canvas Critter**: A standalone desktop application currently being developed by CSUN students for a COMP 380 project. Hosted externally via SiteGround with a dedicated landing page for Beta downloads. Includes a **dynamic how-to-use SlidePlayer** — an 18-step cinematic guide with inline and full-screen theater mode, dot navigation, and preloaded images served from SiteGround.
+- **Canvas Critter**: A standalone desktop application developed by CSUN students. Hosted externally via SiteGround with a dedicated landing page for Beta downloads.
 - **CI/CD Automation**: Fully automated deployment pipeline using GitHub Actions (Backend to Railway, Frontend to SiteGround).
 
 ## Quick Start (Local Development)
