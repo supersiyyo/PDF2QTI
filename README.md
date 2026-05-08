@@ -2,7 +2,7 @@
 
 This repository hosts a scalable, multi-tool educational platform designed for the CSUN community by the Society of Software Engineers (SOSE). It features a modern React frontend utilizing React Router to categorize and deliver both Instructor and Student tools.
 
-Currently featured is **PDF to Canvas QTI** (formerly PDF2QTI), a robust full-stack tool that automatically converts PDF documents into Canvas-ready quizzes and exams using AI.
+Currently featured is **PDF to Canvas QTI** (formerly PDF2QTI), a robust full-stack tool that automatically converts PDF documents into Canvas-ready quizzes and exams, with support for hosting live assessments directly via our mobile bridge.
 
 ## Features
 

@@ -200,7 +200,7 @@ function PDF2QTI() {
     <div className="app-container">
       <header className="header">
         <h1>PDF to Canvas QTI</h1>
-        <p>The ultimate tool for Canvas Quizzes & Exams. Instantly digitize existing PDFs or generate AI-powered assessments directly into Canvas-ready QTI packages.</p>
+        <p>The ultimate tool for Canvas Quizzes & Exams. Instantly digitize PDFs, generate AI-powered assessments, and host live exams directly via our high-performance mobile bridge.</p>
         
         <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'center' }}>
           <motion.button 
