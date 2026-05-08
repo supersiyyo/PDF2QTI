@@ -277,11 +277,19 @@ function PDF2QTI() {
           <div style={{ marginTop: '3rem', padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem', color: '#475569' }}>
               <Lock size={16} />
-              <span style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Privacy & Data Governance</span>
+              <span style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Privacy & Data Governance Fact Check</span>
             </div>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: 1.6, margin: 0 }}>
-              <strong>Zero Training Guarantee:</strong> This application utilizes Google Gemini Enterprise-grade endpoints. Unlike consumer AI, data processed through this bridge is <strong>not used for model training</strong>. Your assessments and student responses remain ephemeral and are purged from our secure SQLite bridge every 24 hours.
+            <p style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: 1.6, margin: '0 0 1rem 0' }}>
+              <strong>Institutional Compliance:</strong> To ensure your data is <strong>never used for model training</strong>, this application must be configured with a <strong>Paid Gemini Service</strong> (e.g., Vertex AI or a Google AI Studio key linked to a Cloud Billing account). 
             </p>
+            <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid #f1f5f9', fontSize: '0.75rem' }}>
+              <div style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', fontSize: '0.65rem', textTransform: 'uppercase' }}>Governance Checklist for Faculty:</div>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <li><strong>Paid/Enterprise Tier:</strong> Google does <u>not</u> use your prompts or responses to train foundational models.</li>
+                <li><strong>Unpaid/Free Tier:</strong> Data <u>may</u> be used for model improvement and human review.</li>
+                <li><strong>Data Sovereignty:</strong> All quiz data and submissions remain ephemeral and are purged from this bridge every 24 hours.</li>
+              </ul>
+            </div>
           </div>
         </>
       ) : (

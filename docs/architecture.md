@@ -12,7 +12,8 @@ Located in the `/backend` directory, the backend serves as the core processing e
 
 - **FastAPI**: Provides a high-performance asynchronous web framework.
 - **SSE (Server-Sent Events)**: The `/api/process-pdf` endpoint utilizes `StreamingResponse` to provide real-time logs to the client. It uses an `asyncio.Queue` to bridge the background AI processing task and the event generator.
-- **google-genai**: The backend uses a two-model cascade — **Gemini 2.5 Flash** as primary, falling back to **Gemini 2.5 Flash-Lite** — with automatic `429`/`503` detection and exponential-backoff retries (3 attempts with a base delay of 2s).
+- **google-genai**: The backend uses a two-model cascade — **Gemini 2.5 Flash** as primary, falling back to **Gemini 2.5 Flash-Lite**.
+- **Data Governance**: When used with a **Paid Service Tier** (Vertex AI or AI Studio with Billing), Google commits to **Zero Model Training** on customer data. In the Unpaid/Free tier, data may be used for model improvement.
 - **text2qti**: A CLI tool utilized via `subprocess` to compile markdown representations of quizzes into valid QTI `.zip` files.
 - **Pydantic**: Enforces strict typing and data validation for the JSON structures interacting with the AI.
 - **SQLModel & SQLite**: Power the persistence layer for the Emergency Assessment Bridge. Uses **WAL (Write-Ahead Logging)** mode to handle high-concurrency student submissions during live exam windows.
