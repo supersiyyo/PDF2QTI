@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Copy, ExternalLink, Check, Info, Lock, Clock } from 'lucide-react';
+import { Copy, ExternalLink, Check, Info, Lock, Clock, Play, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UploadComponent from '../../components/UploadComponent';
 import PreviewEditor from '../../components/PreviewEditor';
@@ -17,6 +17,7 @@ function PDF2QTI() {
   const [currentModel, setCurrentModel] = useState('');
   const [examLinks, setExamLinks] = useState(null); // { student, admin }
   const [copyStatus, setCopyStatus] = useState(null); // 'student' or 'admin'
+  const [showVideo, setShowVideo] = useState(false);
 
   const handleProcessPdf = async (file, mode, questionCount) => {
     setLoading(true);
@@ -187,12 +188,25 @@ function PDF2QTI() {
       alert("Failed to copy. Please select and copy manually.");
     }
   };
-
   return (
     <div className="app-container">
       <header className="header">
         <h1>PDF to Canvas QTI</h1>
         <p>Transform documents and static quizzes into Canvas-ready assessments.</p>
+        
+        <div className="video-trigger-container">
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowVideo(true)}
+            className="video-trigger"
+          >
+            <div className="play-icon">
+              <Play size={12} fill="currentColor" />
+            </div>
+            Watch how it works
+          </motion.button>
+        </div>
       </header>
 
       {warning && (
@@ -434,6 +448,37 @@ function PDF2QTI() {
         </svg>
         <span>View on GitHub</span>
       </a>
+
+      {/* Video Modal */}
+      <AnimatePresence>
+        {showVideo && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="video-modal-overlay"
+            onClick={() => setShowVideo(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="video-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="video-close-btn" onClick={() => setShowVideo(false)}>
+                <X size={24} />
+              </button>
+              <div className="video-container">
+                <video controls autoPlay loop>
+                  <source src="/videos/howtovideo.webm" type="video/webm" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

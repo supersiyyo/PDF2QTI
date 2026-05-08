@@ -22,6 +22,7 @@ Currently featured is **PDF to Canvas QTI** (formerly PDF2QTI), a robust full-st
   - **Privacy & Compliance**: Integrated links to official Google Gemini Data Policies to verify zero-training status on paid tiers.
 - **Premium User Experience**:
   - High-Fidelity Skeleton UI with a live timer and educational facts.
+  - **Visual Walkthrough**: Integrated high-definition video guide to assist faculty in navigating the tool's features.
   - Interactive Preview Editor to review and edit AI-generated questions before export.
   - Interactive **Updates Module** on the homepage featuring staggered Framer Motion micro-interactions and a global changelog cache.
 - **Canvas Critter**: A standalone desktop application developed by CSUN students. Hosted externally via SiteGround with a dedicated landing page for Beta downloads.

@@ -65,7 +65,7 @@ Located in the `/frontend` directory, the frontend acts as a unified portal for 
 - **Educational Design System**: Uses a light, clean UI designed for faculty accessibility. Accents include CSUN Red (`#D00D2D`) and SOSE Purple (`#6B6DFF`).
 - **Updates Module**: A dynamic, cached, and interactive changelog component using Framer Motion micro-interactions. Powered by a static `changelog.json`.
 - **Tools**:
-    - **PDF2QTI**: Encapsulated in `/instructor/pdf2qti`. Features real-time SSE stream handling, resilient model execution, and a high-fidelity interactive Preview Editor for QTI creation.
+    - **PDF2QTI**: Encapsulated in `/instructor/pdf2qti`. Features real-time SSE stream handling, resilient model execution, an integrated HD video walkthrough guide, and a high-fidelity interactive Preview Editor for QTI creation.
     - **Host Live Assessment**: A mobile-optimized exam-taking environment featuring lightweight identity verification, staggered entry animations, and a high-density instructor results ledger.
     - **Canvas Critter**: Encapsulated in `/student/canvas-critter`. A dedicated landing page for downloading the standalone desktop application, featuring an integrated SlidePlayer how-to guide.
 - **Open Source Transparency**: Persistent links to the GitHub repository are integrated into the UI.
