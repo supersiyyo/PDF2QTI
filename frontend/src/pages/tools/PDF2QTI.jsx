@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Copy, ExternalLink, Check, Info, Lock, Clock, Play, X } from 'lucide-react';
+import { Copy, ExternalLink, Check, Info, Lock, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UploadComponent from '../../components/UploadComponent';
 import PreviewEditor from '../../components/PreviewEditor';
 import ProcessingState from '../../components/ProcessingState';
+import VideoPlayer from '../../components/VideoPlayer';
 
 function PDF2QTI() {
   const [quizData, setQuizData] = useState(null);
@@ -17,7 +18,14 @@ function PDF2QTI() {
   const [currentModel, setCurrentModel] = useState('');
   const [examLinks, setExamLinks] = useState(null); // { student, admin }
   const [copyStatus, setCopyStatus] = useState(null); // 'student' or 'admin'
-  const [showVideo, setShowVideo] = useState(false);
+  const playerRef = useRef(null);
+
+  const scrollToGuide = () => {
+    playerRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      playerRef.current?.openTheater();
+    }, 800); // Wait for scroll to finish
+  };
 
   const handleProcessPdf = async (file, mode, questionCount) => {
     setLoading(true);
@@ -194,17 +202,15 @@ function PDF2QTI() {
         <h1>PDF to Canvas QTI</h1>
         <p>Transform documents and static quizzes into Canvas-ready assessments.</p>
         
-        <div className="video-trigger-container">
+        <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'center' }}>
           <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowVideo(true)}
-            className="video-trigger"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={scrollToGuide}
+            className="guide-trigger"
           >
-            <div className="play-icon">
-              <Play size={12} fill="currentColor" />
-            </div>
-            Watch how it works
+            <div className="play-dot" />
+            Watch Guide
           </motion.button>
         </div>
       </header>
@@ -437,6 +443,10 @@ function PDF2QTI() {
         )}
       </AnimatePresence>
 
+      <div style={{ marginTop: '4rem' }}>
+        <VideoPlayer ref={playerRef} src="/videos/howtovideo.webm" />
+      </div>
+
       <a 
         href="https://github.com/supersiyyo/PDF2QTI" 
         target="_blank" 
@@ -448,37 +458,6 @@ function PDF2QTI() {
         </svg>
         <span>View on GitHub</span>
       </a>
-
-      {/* Video Modal */}
-      <AnimatePresence>
-        {showVideo && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="video-modal-overlay"
-            onClick={() => setShowVideo(false)}
-          >
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="video-modal-content"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button className="video-close-btn" onClick={() => setShowVideo(false)}>
-                <X size={24} />
-              </button>
-              <div className="video-container">
-                <video controls autoPlay loop>
-                  <source src="/videos/howtovideo.webm" type="video/webm" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
