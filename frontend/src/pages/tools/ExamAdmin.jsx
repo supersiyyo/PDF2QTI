@@ -34,7 +34,8 @@ const ExamAdmin = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/exams/admin/${secretId}`);
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`).replace(/\/+$/, '');
+      const response = await fetch(`${baseURL}/api/exams/admin/${secretId}`);
       if (!response.ok) throw new Error('Invalid or expired admin link');
       const json = await response.json();
       setData(json);
@@ -47,7 +48,7 @@ const ExamAdmin = () => {
 
   const handleToggleSetting = async (key, value) => {
     try {
-      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`).replace(/\/+$/, '');
       const response = await fetch(`${baseURL}/api/exams/admin/${secretId}/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -65,7 +66,8 @@ const ExamAdmin = () => {
     
     setClosing(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/exams/admin/${secretId}/close`, {
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`).replace(/\/+$/, '');
+      const response = await fetch(`${baseURL}/api/exams/admin/${secretId}/close`, {
         method: 'POST'
       });
       if (!response.ok) throw new Error('Failed to close exam');
@@ -149,8 +151,15 @@ const ExamAdmin = () => {
               ADMIN_SECURE
             </span>
           </div>
-          <h1 style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1, marginBottom: '1.5rem' }}>
-            {data.title}
+          <h1 style={{ 
+            fontSize: '2.5rem', 
+            fontWeight: 900, 
+            color: 'var(--text-primary)', 
+            lineHeight: 1.1, 
+            marginBottom: '1.5rem',
+            overflowWrap: 'break-word'
+          }}>
+            {data.title?.replace(/_/g, ' ')}
           </h1>
           <div style={{ display: 'flex', gap: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -1,5 +1,21 @@
 [
   {
+    "id": "11",
+    "date": "2026-05-08",
+    "version": "v1.4.1",
+    "title": "Network & Layout Hotfixes",
+    "type": "fix",
+    "description": "Resolved a critical network issue preventing mobile access on local networks by implementing dynamic host resolution. Also patched a UI layout bug where long filenames broke assessment containers."
+  },
+  {
+    "id": "10",
+    "date": "2026-05-08",
+    "version": "v1.4.0",
+    "title": "Live Assessment Bridge Refinements",
+    "type": "feature",
+    "description": "Renamed the Assessment Lifeboat to the 'Live Assessment Bridge', introduced a clean numeric input for question counts, added official Google privacy policy links for Tier 1 billing, and fixed critical backend database schema errors."
+  },
+  {
     "id": "9",
     "date": "2026-05-07",
     "version": "v1.3.0",

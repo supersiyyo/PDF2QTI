@@ -21,7 +21,8 @@ const ExamTake = () => {
 
   const fetchExam = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/exams/${examId}`);
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`).replace(/\/+$/, '');
+      const response = await fetch(`${baseURL}/api/exams/${examId}`);
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.detail || 'Failed to load exam');
@@ -168,7 +169,7 @@ const ExamTakeContent = ({ exam, loading, error, examId }) => {
 
     setSubmitting(true);
     try {
-      const baseURL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const baseURL = (import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`).replace(/\/+$/, '');
       const response = await fetch(`${baseURL}/api/exams/${examId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -218,8 +219,15 @@ const ExamTakeContent = ({ exam, loading, error, examId }) => {
                 <ShieldCheck size={14} />
                 <span style={{ letterSpacing: '0.05em', textTransform: 'uppercase' }}>Identity Verification</span>
               </div>
-              <h1 style={{ fontSize: '2.25rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1.1, marginBottom: '0.75rem' }}>
-                {exam.title}
+              <h1 style={{ 
+                fontSize: '1.75rem', 
+                fontWeight: 900, 
+                color: 'var(--text-primary)', 
+                lineHeight: 1.2, 
+                marginBottom: '0.75rem',
+                overflowWrap: 'break-word'
+              }}>
+                {exam.title?.replace(/_/g, ' ')}
               </h1>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 500 }}>
                 Enter your credentials to access this assessment.
