@@ -344,8 +344,8 @@ function PDF2QTI() {
                 >
                   <Check size={44} strokeWidth={3} />
                 </motion.div>
-                <h2 style={{ fontSize: '2.25rem', fontWeight: 900, marginBottom: '0.5rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Assessment Live</h2>
-                <p style={{ color: 'var(--text-secondary)', fontWeight: 500, fontSize: '1rem' }}>The emergency bridge is active and secured.</p>
+                <h2 style={{ fontSize: '2.25rem', fontWeight: 900, marginBottom: '0.5rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Live Assessment Ready</h2>
+                <p style={{ color: 'var(--text-secondary)', fontWeight: 500, fontSize: '1rem' }}>Your secure student link and dashboard are ready.</p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

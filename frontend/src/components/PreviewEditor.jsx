@@ -65,7 +65,7 @@ const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
             }} 
             onClick={handleGenerate}
           >
-            <Zap size={18} /> Generate Emergency Exam
+            <Zap size={18} /> Host Live Assessment
           </button>
           <button 
             className="btn-primary" 
@@ -79,9 +79,12 @@ const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
 
       {/* Emergency Exam Settings */}
       <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid #e0e7ff', background: '#f5f7ff' }}>
-        <h3 style={{ fontSize: '0.8rem', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Zap size={14} /> Assessment Proctoring Settings
+        <h3 style={{ fontSize: '0.8rem', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Zap size={14} /> Live Proctoring Controls
         </h3>
+        <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+          Create a <strong>Live Assessment</strong> to get a secure link you can share with students immediately. You'll receive a private dashboard to monitor submissions and view auto-graded results in real-time.
+        </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
             <div 

@@ -14,11 +14,12 @@ Currently featured is **PDF to Canvas QTI** (formerly PDF2QTI), a robust full-st
   - Real-time Streaming Feedback (SSE) and Non-blocking Execution.
   - Digitize Mode (extract existing questions) & Generate Mode (invent new questions).
   - Converts quiz data into a valid QTI 1.2 `.zip` package via `text2qti`.
-- **Emergency Canvas Lifeboat**: 
-  - **Friction-less Distribution**: Generates unique "Secret Links" for students and instructors, bypassing SSO/Canvas Web bottlenecks during outages.
+- **Live Assessment Bridge**: 
+  - **Friction-less Distribution**: Generates unique "Secret Links" for students and instructors, bypassing SSO/Canvas Web bottlenecks during outages or for direct classroom delivery.
   - **Mobile-Optimized Intake**: Clean, high-performance exam interface designed for student mobile devices.
   - **Real-time Admin Dashboard**: Monitor class performance and export student scores to CSV for manual Canvas upload.
   - **Ephemeral Storage**: Automatic 24-hour data wipe to maintain hygiene and security.
+  - **Privacy & Compliance**: Integrated links to official Google Gemini Data Policies to verify zero-training status on paid tiers.
 - **Premium User Experience**:
   - High-Fidelity Skeleton UI with a live timer and educational facts.
   - Interactive Preview Editor to review and edit AI-generated questions before export.

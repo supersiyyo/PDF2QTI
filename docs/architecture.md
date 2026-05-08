@@ -38,9 +38,9 @@ Located in the `/backend` directory, the backend serves as the core processing e
 - `503` — Gemini overload errors; returned if all retries and cascade models fail.
 - `500` — Unexpected server errors (e.g., missing API key).
 
-### 2. Emergency Assessment Bridge (Lifeboat)
+### 2. Live Assessment Bridge
 
-A specialized component designed for high-concurrency exam administration during Canvas outages.
+A specialized component designed for high-concurrency exam administration during Canvas outages or for direct classroom delivery.
 
 **Key Architecture Features:**
 - **URL Entropy Security**: Bypasses SSO/OAuth bottlenecks by generating cryptographically secure unique hashes for student intake (`/take/:id`) and instructor admin (`/admin/:secret`).
@@ -66,6 +66,6 @@ Located in the `/frontend` directory, the frontend acts as a unified portal for 
 - **Updates Module**: A dynamic, cached, and interactive changelog component using Framer Motion micro-interactions. Powered by a static `changelog.json`.
 - **Tools**:
     - **PDF2QTI**: Encapsulated in `/instructor/pdf2qti`. Features real-time SSE stream handling, resilient model execution, and a high-fidelity interactive Preview Editor for QTI creation.
-    - **Emergency Lifeboat**: A mobile-optimized exam-taking environment featuring lightweight identity verification, staggered entry animations, and a high-density instructor results ledger.
+    - **Host Live Assessment**: A mobile-optimized exam-taking environment featuring lightweight identity verification, staggered entry animations, and a high-density instructor results ledger.
     - **Canvas Critter**: Encapsulated in `/student/canvas-critter`. A dedicated landing page for downloading the standalone desktop application, featuring an integrated SlidePlayer how-to guide.
 - **Open Source Transparency**: Persistent links to the GitHub repository are integrated into the UI.
