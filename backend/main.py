@@ -272,7 +272,6 @@ class ExtractQTIRequest(BaseModel):
     show_score: Optional[bool] = True
     shuffle_questions: Optional[bool] = False
     shuffle_choices: Optional[bool] = False
-    single_attempt: Optional[bool] = False
 
 @app.post("/api/export-qti")
 async def export_qti(data: ExtractQTIRequest, background_tasks: BackgroundTasks):
@@ -349,8 +348,7 @@ async def create_exam(data: ExtractQTIRequest, session: Session = Depends(get_se
         questions_json=questions_list,
         show_score=getattr(data, "show_score", True),
         shuffle_questions=getattr(data, "shuffle_questions", False),
-        shuffle_choices=getattr(data, "shuffle_choices", False),
-        single_attempt=getattr(data, "single_attempt", False)
+        shuffle_choices=getattr(data, "shuffle_choices", False)
     )
     session.add(new_exam)
     session.commit()
@@ -391,8 +389,7 @@ async def get_exam(exam_id: str, session: Session = Depends(get_session)):
         "created_at": exam.created_at,
         "show_score": exam.show_score,
         "shuffle_questions": exam.shuffle_questions,
-        "shuffle_choices": exam.shuffle_choices,
-        "single_attempt": exam.single_attempt
+        "shuffle_choices": exam.shuffle_choices
     }
 
 @app.post("/api/exams/{exam_id}/submit")
@@ -407,17 +404,6 @@ async def submit_exam(exam_id: str, submission_data: SubmissionBase, session: Se
     if exam.status == "closed":
         raise HTTPException(status_code=403, detail="This exam is no longer accepting submissions.")
     
-    # Check for single attempt
-    if exam.single_attempt:
-        existing = session.exec(
-            select(Submission).where(
-                Submission.exam_id == exam.id,
-                Submission.student_email == submission_data.student_email
-            )
-        ).first()
-        if existing:
-            raise HTTPException(status_code=403, detail="You have already submitted this assessment.")
-
     # Calculate score
     correct_count = 0
     total_questions = len(exam.questions_json)
@@ -464,7 +450,6 @@ async def get_admin_dashboard(secret_id: str, session: Session = Depends(get_ses
         "show_score": exam.show_score,
         "shuffle_questions": exam.shuffle_questions,
         "shuffle_choices": exam.shuffle_choices,
-        "single_attempt": exam.single_attempt,
         "submissions": exam.submissions
     }
 
@@ -498,8 +483,6 @@ async def update_settings(secret_id: str, settings: dict, session: Session = Dep
         exam.shuffle_questions = settings["shuffle_questions"]
     if "shuffle_choices" in settings:
         exam.shuffle_choices = settings["shuffle_choices"]
-    if "single_attempt" in settings:
-        exam.single_attempt = settings["single_attempt"]
     if "status" in settings and settings["status"] in ["open", "closed"]:
         exam.status = settings["status"]
         

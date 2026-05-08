@@ -236,13 +236,6 @@ const ExamAdmin = () => {
                 <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Show Score</span>
                 {data.show_score ? <CheckCircle2 size={16} color="var(--success)" /> : <XCircle size={16} color="var(--error)" />}
              </button>
-             <button 
-                onClick={() => handleToggleSetting('single_attempt', !data.single_attempt)}
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: '1px solid var(--border)', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}
-             >
-                <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Single Attempt</span>
-                {data.single_attempt ? <CheckCircle2 size={16} color="var(--success)" /> : <XCircle size={16} color="#94a3b8" />}
-             </button>
           </div>
         </div>
       </motion.div>

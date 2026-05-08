@@ -7,7 +7,6 @@ const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
   const [showScore, setShowScore] = useState(true);
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
   const [shuffleChoices, setShuffleChoices] = useState(false);
-  const [singleAttempt, setSingleAttempt] = useState(false);
 
   const handleTitleChange = (text) => {
     const newData = { ...data };
@@ -38,8 +37,7 @@ const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
       ...data,
       show_score: showScore,
       shuffle_questions: shuffleQuestions,
-      shuffle_choices: shuffleChoices,
-      single_attempt: singleAttempt
+      shuffle_choices: shuffleChoices
     };
     onGenerateExam(finalData);
   };
@@ -82,7 +80,7 @@ const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
       {/* Emergency Exam Settings */}
       <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid #e0e7ff', background: '#f5f7ff' }}>
         <h3 style={{ fontSize: '0.8rem', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Zap size={14} /> Emergency Lifeboat Configuration
+          <Zap size={14} /> Assessment Proctoring Settings
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
@@ -137,24 +135,6 @@ const PreviewEditor = ({ initialData, onExport, onReset, onGenerateExam }) => {
             </div>
             <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
               <Shuffle size={14} style={{display:'inline', marginRight:'4px'}}/> Shuffle Choices
-            </span>
-          </label>
-
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-            <div 
-              onClick={() => setSingleAttempt(!singleAttempt)}
-              style={{ 
-                width: '40px', height: '22px', borderRadius: '11px', background: singleAttempt ? 'var(--primary)' : '#cbd5e1', 
-                position: 'relative', transition: 'all 0.2s' 
-              }}
-            >
-              <div style={{ 
-                width: '18px', height: '18px', background: 'white', borderRadius: '50%', 
-                position: 'absolute', top: '2px', left: singleAttempt ? '20px' : '2px', transition: 'all 0.2s' 
-              }} />
-            </div>
-            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
-              <Repeat size={14} style={{display:'inline', marginRight:'4px'}}/> Single Attempt Only
             </span>
           </label>
         </div>

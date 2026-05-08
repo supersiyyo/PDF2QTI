@@ -10,7 +10,6 @@ class ExamBase(SQLModel):
     show_score: bool = Field(default=True)
     shuffle_questions: bool = Field(default=False)
     shuffle_choices: bool = Field(default=False)
-    single_attempt: bool = Field(default=False)
 
 
 class Exam(ExamBase, table=True):

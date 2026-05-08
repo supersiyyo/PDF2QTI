@@ -77,24 +77,59 @@ const UploadComponent = ({ onProcess }) => {
         </label>
       </div>
 
-      <div style={{ marginTop: '1.5rem', padding: '0 0.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-          <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Target Question Count</label>
-          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary)' }}>{questionCount} Questions</span>
+      {mode === 'generate' && (
+        <div style={{ marginTop: '1.5rem', padding: '0 0.5rem' }}>
+          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
+            Target Question Count
+          </label>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            {[5, 10, 15, 20].map(val => (
+              <button 
+                key={val}
+                onClick={() => setQuestionCount(val)}
+                style={{
+                  flex: 1,
+                  padding: '8px',
+                  borderRadius: '8px',
+                  border: '1px solid',
+                  borderColor: questionCount === val ? 'var(--primary)' : 'var(--border)',
+                  backgroundColor: questionCount === val ? '#f0f4ff' : 'white',
+                  color: questionCount === val ? 'var(--primary)' : 'var(--text-secondary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {val}
+              </button>
+            ))}
+            <div style={{ position: 'relative', flex: 1.5, minWidth: '80px' }}>
+              <input 
+                type="number"
+                min="1"
+                max="50"
+                value={questionCount}
+                onChange={(e) => setQuestionCount(Math.min(50, Math.max(1, parseInt(e.target.value) || 1)))}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  outline: 'none',
+                  textAlign: 'center'
+                }}
+              />
+              <span style={{ position: 'absolute', top: '-18px', left: '0', fontSize: '0.65rem', color: '#94a3b8', fontWeight: 500 }}>Custom</span>
+            </div>
+          </div>
+          <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontStyle: 'italic' }}>
+            The AI will generate up to {questionCount} questions based on your document.
+          </p>
         </div>
-        <input 
-          type="range" 
-          min="1" 
-          max="50" 
-          value={questionCount} 
-          onChange={(e) => setQuestionCount(parseInt(e.target.value))}
-          style={{ width: '100%', accentColor: 'var(--primary)' }}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
-          <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>1</span>
-          <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>50</span>
-        </div>
-      </div>
+      )}
 
       <button 
         className="btn-primary" 

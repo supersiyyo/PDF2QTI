@@ -248,9 +248,12 @@ function PDF2QTI() {
               className="glass-panel"
               style={{ marginTop: '2rem', padding: '1.5rem' }}
             >
-              <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Clock size={14} /> Recently Generated
               </h3>
+              <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '1.25rem', lineHeight: 1.4 }}>
+                <strong>Local-Only Access:</strong> This history is stored <u>only on your device</u> (browser localStorage) and is never sent to our servers. Clearing your browser cache will erase this list.
+              </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {(() => {
                   try {
@@ -286,18 +289,26 @@ function PDF2QTI() {
           <div style={{ marginTop: '3rem', padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem', color: '#475569' }}>
               <Lock size={16} />
-              <span style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Privacy & Data Governance Fact Check</span>
+              <span style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Data Privacy & Compliance</span>
             </div>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: 1.6, margin: '0 0 1rem 0' }}>
-              <strong>Institutional Compliance:</strong> To ensure your data is <strong>never used for model training</strong>, this application must be configured with a <strong>Paid Gemini Service</strong> (e.g., Vertex AI or a Google AI Studio key linked to a Cloud Billing account). 
+            <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.6, margin: '0 0 1rem 0' }}>
+              <strong>Safe & Secure Generation:</strong> This application is configured to abide by strict data privacy standards. Your prompts and generated quiz content are <strong>not used for AI model training</strong>.
             </p>
             <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid #f1f5f9', fontSize: '0.75rem' }}>
-              <div style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', fontSize: '0.65rem', textTransform: 'uppercase' }}>Governance Checklist for Faculty:</div>
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <li><strong>Paid/Enterprise Tier:</strong> Google does <u>not</u> use your prompts or responses to train foundational models.</li>
-                <li><strong>Unpaid/Free Tier:</strong> Data <u>may</u> be used for model improvement and human review.</li>
-                <li><strong>Data Sovereignty:</strong> All quiz data and submissions remain ephemeral and are purged from this bridge every 24 hours.</li>
+              <div style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', fontSize: '0.65rem', textTransform: 'uppercase' }}>Compliance Fact Sheet:</div>
+              <ul style={{ margin: '0 0 12px 0', paddingLeft: '1.25rem', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <li><strong>No Training:</strong> Content is processed via a secure bridge and never contributes to foundational model improvement.</li>
+                <li><strong>Ephemeral Storage:</strong> All assessment data and student records are automatically purged every 24 hours.</li>
+                <li><strong>Device Sovereignty:</strong> Your generation history is stored locally on your device and never leaves this browser.</li>
               </ul>
+              <a 
+                href="https://ai.google.dev/gemini-api/terms#data-use-paid" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ color: '#475569', fontWeight: 700, textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <ExternalLink size={12} /> Verify Compliance with Official Data Policy
+              </a>
             </div>
           </div>
         </>
