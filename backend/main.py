@@ -53,7 +53,7 @@ def cleanup_old_exams(session: Session):
         count += 1
     if count > 0:
         session.commit()
-        print(f"[Cleanup] Deleted {count} expired exams.")
+        print(f"[Cleanup] Successfully purged {count} expired exams and their associated submissions.")
 
 # AI Schema Configuration
 class Question(BaseModel):
@@ -341,7 +341,7 @@ async def export_qti(data: ExtractQTIRequest, background_tasks: BackgroundTasks)
 async def create_exam(data: ExtractQTIRequest, session: Session = Depends(get_session)):
     """Create a new exam from extracted questions."""
     # Convert Question objects to dicts for JSON storage
-    questions_list = [q.dict() for q in data.questions]
+    questions_list = [q.model_dump() for q in data.questions]
     
     new_exam = Exam(
         title=data.quiz_title,

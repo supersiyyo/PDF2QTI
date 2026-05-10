@@ -17,7 +17,7 @@ class Exam(ExamBase, table=True):
     secret_id: str = Field(default_factory=lambda: str(uuid.uuid4()), unique=True)
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
     
-    submissions: List["Submission"] = Relationship(back_populates="exam")
+    submissions: List["Submission"] = Relationship(back_populates="exam", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 class SubmissionBase(SQLModel):
     student_email: str
@@ -27,7 +27,7 @@ class SubmissionBase(SQLModel):
 
 class Submission(SubmissionBase, table=True):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    exam_id: str = Field(foreign_key="exam.id")
+    exam_id: str = Field(foreign_key="exam.id", nullable=False)
     submitted_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
     
     exam: Exam = Relationship(back_populates="submissions")
